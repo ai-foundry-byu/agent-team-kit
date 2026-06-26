@@ -38,16 +38,32 @@ Agents are separate processes that cannot talk to each other, so coordination ro
 | `bootstrap.sh` | One-command local setup a collaborator runs after cloning |
 | `docs/HOOKS.md`, `docs/SKILLS.md` | Detailed per-artifact reference (every hook, every skill) |
 | `docs/FEEDBACK-LOOP-SPEC.md` | Stack-agnostic build spec for the in-app feedback + bug-fix loop |
+| `docs/ADOPT.md` | The three adoption paths (solo brownfield, new pair, solo-adding-a-second) + prerequisites |
 | `docs/` | Project setup, collaborator setup, design notes |
 
 ---
 
 ## Setup
 
-- **Introducing it to a project:** run `./install.sh /path/to/project`, then the manual steps it prints (gitignore, CLAUDE.md, stack customization). Full guide: [`docs/SETUP-PROJECT.md`](./docs/SETUP-PROJECT.md).
-- **Joining a project that has it (plug-and-play):** clone it, then run `./bootstrap.sh` from the project root. It does the one-time local setup (sets the git hooks path, restores exec bits, sanity-checks Node + settings) and prints the only two things it can't automate: put personal config in `.claude/settings.local.json`, and start a fresh Claude session. Details: [`docs/SETUP-COLLABORATOR.md`](./docs/SETUP-COLLABORATOR.md). The gotcha to remember: a file being in the repo is necessary but not sufficient. Settings and skills auto-load, git hooks need that one config command (which `bootstrap.sh` runs), and both can require a fresh session.
-- **Customize for your stack:** the guards ship for Supabase + pnpm. Adjust `SCHEMA_RE`/`PSQL_DDL_RE` in `bash-guard.mjs`, the port range in `dev-port.mjs`, and the migrations path in `post-merge`.
-- **Go deep:** every hook is documented in [`docs/HOOKS.md`](./docs/HOOKS.md), every bundled skill in [`docs/SKILLS.md`](./docs/SKILLS.md).
+**The kit is a tool you run *against* your repo, not something that lives inside it.** You clone it to a scratch location, run the installer pointed at your project, and the artifacts land in logical places in your repo. No nested git repo, no submodule, no repo-within-a-repo. Prerequisites and the full scenario-by-scenario guide are in [`docs/ADOPT.md`](./docs/ADOPT.md).
+
+**Pull it into your project** (run from your project root, after committing your working tree so you can review what's added):
+
+```bash
+gh repo clone sdmurff/agent-team-kit /tmp/agent-team-kit
+/tmp/agent-team-kit/install.sh "$PWD"
+rm -rf /tmp/agent-team-kit
+```
+
+The installer is idempotent and safe on a built-out repo: it copies the hooks, skills, `bootstrap.sh`, and the feedback spec into place; appends the share rules to `.gitignore` and the concurrent-agents section to `CLAUDE.md` (guarded, never duplicating); sets `core.hooksPath`; and never touches your source. Review the diff, then commit.
+
+**Three paths, all using that one installer** (details in [`docs/ADOPT.md`](./docs/ADOPT.md)):
+
+- **Solo dev, existing project (brownfield).** Run it, commit, start a fresh session. You get per-session dev ports plus git/schema/psql guards for your own parallel agents. Optionally hand `docs/FEEDBACK-LOOP-SPEC.md` to your agent to build the feedback loop.
+- **New two-person team (greenfield).** One person installs, customizes, commits, and pushes; the other clones the project and runs `./bootstrap.sh`. Both adopt the collaboration model below.
+- **Solo project adding a second person.** You already installed it solo; the new person clones and runs `./bootstrap.sh`, and you switch on the human agreements.
+
+**Customize for your stack** if you're not on Supabase + pnpm (`SCHEMA_RE`/`PSQL_DDL_RE` in `bash-guard.mjs`, the port range in `dev-port.mjs`, the migrations path in `post-merge`), and **go deep** in [`docs/HOOKS.md`](./docs/HOOKS.md) and [`docs/SKILLS.md`](./docs/SKILLS.md).
 
 ---
 

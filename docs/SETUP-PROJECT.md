@@ -1,38 +1,33 @@
 # Setting the kit up in a project
 
-For the person introducing the kit to a repo (you, usually). A collaborator who is just *joining* a repo that already has it wants `SETUP-COLLABORATOR.md` instead.
+The full step-by-step for all three situations is in [`ADOPT.md`](./ADOPT.md): the prerequisites, the no-nesting install pattern, and the solo-brownfield / new-pair / adding-a-second paths. This page is just the reference tables those paths lean on.
 
-## 1. Run the installer
+## The installer, in one line
+
+From your project root, after committing your working tree (so you can review what's added):
 
 ```bash
-./install.sh /path/to/your/project
+gh repo clone sdmurff/agent-team-kit /tmp/agent-team-kit
+/tmp/agent-team-kit/install.sh "$PWD"
+rm -rf /tmp/agent-team-kit
 ```
 
-It copies the hook scripts to `scripts/hooks/`, the git hook to `.githooks/post-merge`, drops in `.claude/settings.json` (or flags it for a manual merge if one exists), and sets `core.hooksPath=.githooks`.
+The kit is run *against* your repo, not nested inside it. `install.sh` is idempotent and safe on a built-out repo: it copies the hooks, skills, `bootstrap.sh`, and the feedback spec into place; appends the `.claude` share rules to `.gitignore` and the concurrent-agents section to `CLAUDE.md` (guarded, never duplicating); sets `core.hooksPath`; and never touches your source.
 
-## 2. Finish the manual steps it prints
-
-1. **`.gitignore`** — append `snippets/gitignore-additions.txt`. If `.claude/` is currently blanket-ignored, switch it to the `.claude/*` + negations form from the snippet so the shared wiring and skills travel while `settings.local.json` stays local.
-2. **`CLAUDE.md`** — paste `snippets/CLAUDE-md-section.md`.
-3. **Customize for your stack** (see below).
-4. **Restart** your Claude Code session so the hooks load (they are read at session start).
-
-## 3. Customize for your stack
+## Customize for your stack
 
 The defaults assume Supabase + pnpm. Edit:
 
-- **`scripts/hooks/bash-guard.mjs`**
-  - `SCHEMA_RE` — the commands that serialize behind the schema lock. Replace `supabase ... / db:types / seed:dev / pnpm add|remove|up` with your migration, codegen, seed, and dependency commands.
-  - `PSQL_DDL_RE` — only relevant if you use `psql` against a SQL database. Remove the check if you don't.
-- **`scripts/hooks/dev-port.mjs`** — `LOW`/`HIGH` port range and the reserved human port (default reserves `5173`, Vite's default).
-- **`.githooks/post-merge`** — the migrations directory it watches (`supabase/migrations/`).
-
-## 4. Verify
-
-Start a fresh session and try a blocked command, e.g. ask the agent to run `git add -A` or an inline `psql ... ALTER TABLE ...`. The guard should refuse with an explanation. A normal `ls` or `git status` should be untouched and fast.
+- `scripts/hooks/bash-guard.mjs` — `SCHEMA_RE` (the commands that serialize behind the schema lock) and `PSQL_DDL_RE` (the ad-hoc-DDL block; remove it if you don't use psql).
+- `scripts/hooks/dev-port.mjs` — `LOW`/`HIGH` port range and the reserved human port.
+- `.githooks/post-merge` — the migrations directory it watches.
 
 ## What gets committed vs stays local
 
-- **Committed (shared):** `scripts/hooks/*`, `.githooks/*`, `.claude/settings.json`, `.claude/skills/*`, the CLAUDE.md section, the gitignore lines.
-- **Local per machine:** `.claude/settings.local.json` (personal config), and `core.hooksPath` (a git config each clone sets once — see collaborator setup).
-- **Never tracked:** `.git/.wg-agent/` coordination state (lives inside `.git`).
+- **Committed (shared):** `scripts/hooks/*`, `.githooks/*`, `.claude/settings.json`, `.claude/skills/*`, `docs/FEEDBACK-LOOP-SPEC.md`, the CLAUDE.md section, the `.gitignore` lines.
+- **Local per machine:** `.claude/settings.local.json` (personal config), and `core.hooksPath` (each clone sets it once; `bootstrap.sh` does it).
+- **Never tracked:** `.git/.wg-agent/` coordination state (it lives inside `.git`).
+
+## Verify
+
+Start a fresh session and try a blocked command (`git add -A`, or an inline `psql ... ALTER TABLE ...`) — the guard should refuse with an explanation. A normal `ls` or `git status` should be untouched and fast.
