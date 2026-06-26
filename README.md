@@ -4,7 +4,7 @@
 
 An "AI-native team" here means a small team where most code is written by Claude Code agents, often several at once per person, committing directly to `main`. That style is fast, but it collides on things that have nothing to do with the code: dev-server ports, the shared database, and the git working tree. This kit is the setup and the working agreements that make it smooth.
 
-**Read this as two documents in one: an education and a setup guide.** The first half teaches the way of working (why agents collide, the model that resolves it, and the human agreements that go with it); the setup section and [`docs/`](./docs) get it running on a real project. If you only want to install it, jump to [Setup](#setup); if you are deciding whether to work this way, read top to bottom. The deep "why" behind every artifact is in [`docs/DESIGN-NOTES.md`](./docs/DESIGN-NOTES.md), and the raw origin conversation is in [`conversation-transcript.jsonl`](./conversation-transcript.jsonl).
+**Read this as two documents in one: an education and a setup guide.** The first half teaches the way of working (why agents collide, the model that resolves it, and the human agreements that go with it); the setup section and [`docs/`](./docs) get it running on a real project. If you only want to install it, jump to [Setup](#setup); if you are deciding whether to work this way, read top to bottom. The deep "why" behind every artifact is in [`docs/DESIGN-NOTES.md`](./docs/DESIGN-NOTES.md), and a readable narrative of the session it was designed in is in [`docs/ORIGIN-CONVERSATION.md`](./docs/ORIGIN-CONVERSATION.md).
 
 ---
 
@@ -33,29 +33,36 @@ Agents are separate processes that cannot talk to each other, so coordination ro
 | `hooks/githooks/post-merge` | Flags DB migrations that arrive when you pull |
 | `hooks/settings.json` | The `.claude/settings.json` wiring that registers the hooks |
 | `snippets/` | `.gitignore` lines and the CLAUDE.md section to paste in |
-| `install.sh` | Wires it all into a target project |
+| `skills/` | Four real skills as worked examples (push, regression-check, fix-bug, userflow-map) |
+| `install.sh` | Wires the hooks, skills, and bootstrap into a target project |
+| `bootstrap.sh` | One-command local setup a collaborator runs after cloning |
+| `docs/HOOKS.md`, `docs/SKILLS.md` | Detailed per-artifact reference (every hook, every skill) |
 | `docs/` | Project setup, collaborator setup, design notes |
 
 ---
 
 ## Setup
 
-- **Introducing it to a project:** run `./install.sh /path/to/project`, then the manual steps it prints. Full guide: [`docs/SETUP-PROJECT.md`](./docs/SETUP-PROJECT.md).
-- **Joining a project that has it:** [`docs/SETUP-COLLABORATOR.md`](./docs/SETUP-COLLABORATOR.md) — a short one-time checklist (the `core.hooksPath` config and the `settings.local.json` split). The recurring gotcha: a file being in the repo is necessary but not sufficient. Skills and settings auto-load, git hooks need one config command, and both can require a fresh session.
+- **Introducing it to a project:** run `./install.sh /path/to/project`, then the manual steps it prints (gitignore, CLAUDE.md, stack customization). Full guide: [`docs/SETUP-PROJECT.md`](./docs/SETUP-PROJECT.md).
+- **Joining a project that has it (plug-and-play):** clone it, then run `./bootstrap.sh` from the project root. It does the one-time local setup (sets the git hooks path, restores exec bits, sanity-checks Node + settings) and prints the only two things it can't automate: put personal config in `.claude/settings.local.json`, and start a fresh Claude session. Details: [`docs/SETUP-COLLABORATOR.md`](./docs/SETUP-COLLABORATOR.md). The gotcha to remember: a file being in the repo is necessary but not sufficient. Settings and skills auto-load, git hooks need that one config command (which `bootstrap.sh` runs), and both can require a fresh session.
 - **Customize for your stack:** the guards ship for Supabase + pnpm. Adjust `SCHEMA_RE`/`PSQL_DDL_RE` in `bash-guard.mjs`, the port range in `dev-port.mjs`, and the migrations path in `post-merge`.
+- **Go deep:** every hook is documented in [`docs/HOOKS.md`](./docs/HOOKS.md), every bundled skill in [`docs/SKILLS.md`](./docs/SKILLS.md).
 
 ---
 
-## Working agreements for the two of you
+## Collaboration model, end to end
 
-The hooks stop the mechanical collisions. These are the human norms that keep an AI-native pair sane. Adopt them explicitly:
+The hooks stop the mechanical collisions. This is the human model that wraps them: the full loop two people run on a shared `main`. It is deliberately lightweight, but adopt all of it, because the pieces reinforce each other.
 
-- **Partition by area, and say so.** Before a work block, each person claims a surface ("I'm in grading, you're in rubrics"). Overlap is where agents fight.
-- **Announce before a migration.** The schema lock is *local* to one machine; it cannot see your teammate. So a migration is a "heads up, pushing schema" moment between humans. After pulling their changes, check what is actually applied (`supabase migration list`) before adding your own.
-- **One person owns deploys.** Decide who pushes `main` to production, so you don't double-deploy or race releases. Pushing is a deliberate, human-only act here, never an agent action.
-- **The cockpit integrates.** Pulling/rebasing the shared `main` happens on a clean tree, run by the human, when agents are idle. Don't let a worker agent pull mid-task.
-- **Review each other's agent output.** Agents produce a lot of plausible code quickly. Even with no pull-request gate, build a habit of reading the diff of what the other's agents committed (a quick `/code-review` on recent commits). Speed without a second set of eyes is how subtle wrong-but-plausible code ships.
+- **Stay in your lanes.** Before a work block, each person claims a surface ("I'm in grading, you're in rubrics"). You don't need hard walls, you need to not have two people's agents editing the same files at once. You know the codebase, so partition by area and say so out loud. Overlap is where agents fight, and it is the one thing the hooks can't untangle for you.
+- **Pull and rebase often, and know that nothing automates it.** No hook pulls or rebases for you, on purpose: grabbing your teammate's commits needs a clean working tree and human judgment on conflicts, which is not something to do mid-task behind an agent's back. So make it a habit: pull-rebase at the start of a session, before you push, and whenever your teammate says "pushed." Frequent small pulls keep divergence tiny and merges trivial; a day of not pulling is how you earn a gnarly conflict. The `post-merge` hook's only job is to *react* after a pull, flagging any migrations that just arrived so you don't fall out of schema sync.
+- **Commit small and often.** Small commits make pulls, rebases, and reviews cheap, and they make `git revert` a precise undo. This pairs with the kit's "stage explicit paths" rule.
+- **Let one session be the cockpit.** Keep one Claude session in the main checkout for the human-gated acts: the pull-rebase, any merges, and the single push. Worker agents produce; the cockpit integrates, on a clean tree, when workers are idle.
+- **Announce migrations, own deploys.** The schema lock is local to one machine and can't see your teammate, so a migration is a "heads up, pushing schema" message between humans; after pulling their changes, check what is actually applied (`supabase migration list`) before adding your own. And decide up front who pushes to production, so you never double-deploy or race a release. Pushing is always a deliberate human act here, never an agent's.
+- **Review each other's output.** Agents produce a lot of plausible code fast. Even with no pull-request gate, build the habit of reading the diff of what the other's agents committed (a quick `/code-review` on recent commits). Speed without a second set of eyes is how subtle wrong-but-plausible code ships.
 - **Share knowledge through `CLAUDE.md`, not memory.** `CLAUDE.md` is tracked and steers both your agents identically. Personal Claude memory is per-machine and does *not* travel, so anything the team needs to know goes in `CLAUDE.md`.
+
+The loop, in one line: claim a lane, pull-rebase, work with your agents, integrate through the cockpit, review, and keep schema and deploys coordinated by hand.
 
 ---
 
@@ -75,7 +82,7 @@ None of these are hard to add; they just live beyond the mechanical-collision pr
 
 ## The origin conversation
 
-`conversation-transcript.jsonl` is the raw session this kit was designed in, kept as the rationale of record. Note it is the machine-readable transcript captured mid-session, so it cannot include the session's final turns. For a clean, complete, human-readable copy, run Claude Code's `/export` at the end of a session and save the result alongside it.
+This kit was designed in a single working session. [`docs/ORIGIN-CONVERSATION.md`](./docs/ORIGIN-CONVERSATION.md) is a readable, redacted narrative of how it unfolded, from "should I use worktrees?" to the finished kit. The raw verbatim transcript is kept private and out of this repo on purpose: a full session export embeds project-internal context (configuration, infrastructure names, architecture) that does not belong in a shared toolkit. If you want a personal copy of your own sessions, Claude Code's `/export` produces one, but treat it as private.
 
 ---
 

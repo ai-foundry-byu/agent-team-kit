@@ -7,7 +7,17 @@ You cloned or pulled a repo that ships these hooks. Most of it activates automat
 - **Skills** (`.claude/skills/*`) — Claude Code auto-discovers project skills from `.claude/skills/`. They are already in the right place; nothing to do.
 - **Hook wiring** (`.claude/settings.json`) — Claude Code auto-reads this file, so the SessionStart / PreToolUse / SessionEnd hooks activate on their own.
 
-## The one-time steps you DO need
+## Fastest path: `./bootstrap.sh`
+
+If the project ships the kit's `bootstrap.sh` (it should), that is the whole job. After cloning, from the project root:
+
+```bash
+./bootstrap.sh
+```
+
+It sets the git hooks path, restores exec bits, and sanity-checks Node + settings, then prints the only two things it can't automate (steps 2 and 3 below). Safe to re-run. If for some reason it isn't present, do the steps by hand:
+
+## The one-time steps (what bootstrap does for you)
 
 1. **Enable the project's git hooks.** Git does not honor a repo's hooks path automatically (it would be a security hole). Run once, in the repo:
 

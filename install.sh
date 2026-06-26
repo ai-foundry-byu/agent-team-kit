@@ -19,6 +19,18 @@ cp "$KIT/hooks/githooks/post-merge" "$TARGET/.githooks/post-merge"
 chmod +x "$TARGET/.githooks/post-merge"
 echo "copied hook scripts -> scripts/hooks/ and .githooks/post-merge"
 
+# Project skills (worked examples — adapt or replace for your project).
+if [ -d "$KIT/skills" ]; then
+  mkdir -p "$TARGET/.claude/skills"
+  cp -R "$KIT"/skills/* "$TARGET/.claude/skills/" 2>/dev/null || true
+  echo "copied example skills -> .claude/skills/ (adapt these to your project)"
+fi
+
+# Plug-and-play onboarding for collaborators.
+cp "$KIT/bootstrap.sh" "$TARGET/bootstrap.sh"
+chmod +x "$TARGET/bootstrap.sh"
+echo "copied bootstrap.sh -> project root (collaborators run this after cloning)"
+
 if [ ! -f "$TARGET/.claude/settings.json" ]; then
   cp "$KIT/hooks/settings.json" "$TARGET/.claude/settings.json"
   echo "installed .claude/settings.json"
@@ -43,4 +55,6 @@ Done. Remaining manual steps:
        scripts/hooks/dev-port.mjs     (port range)
        .githooks/post-merge           (migrations dir)
   4. Start a fresh Claude Code session in the project so the hooks load.
+  5. Commit the new files, and tell teammates to run ./bootstrap.sh after they
+     clone (it does their one-time local setup).
 EOF
