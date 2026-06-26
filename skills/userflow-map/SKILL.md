@@ -1,6 +1,6 @@
 ---
 name: userflow-map
-description: Work on the LawGrader user-flow state-machine map in docs/userflow/. Use when the user wants to map a new screen, edit screen metadata (jobs, ways in, actions, ways out), wire transitions, add a screenshot/thumbnail, rebuild the flow graph, OR run the feedback loop — flag an issue / log feedback on a screen, reference an element by address (e.g. create.actions.3), or resolve/implement/close a flagged issue. Triggers on "add a screen to the userflow", "update/continue the user flow map", "map this screen", "flag X on the map", "log an issue", "fix/implement issue i1", "rebuild the flow diagram", or dropping a new screenshot for the flow doc.
+description: Work on the app's user-flow state-machine map in docs/userflow/. Use when the user wants to map a new screen, edit screen metadata (jobs, ways in, actions, ways out), wire transitions, add a screenshot/thumbnail, rebuild the flow graph, OR run the feedback loop — flag an issue / log feedback on a screen, reference an element by address (e.g. create.actions.3), or resolve/implement/close a flagged issue. Triggers on "add a screen to the userflow", "update/continue the user flow map", "map this screen", "flag X on the map", "log an issue", "fix/implement issue i1", "rebuild the flow diagram", or dropping a new screenshot for the flow doc.
 ---
 
 # userflow-map

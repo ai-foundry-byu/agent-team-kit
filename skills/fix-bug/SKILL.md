@@ -19,7 +19,7 @@ Call it `$ID`.
 ## Procedure
 
 1. **Load env.** The connection string and Supabase keys are in
-   `lawgrader/.env.local`: `DATABASE_URL`, `PUBLIC_SUPABASE_URL`,
+   `.env.local`: `DATABASE_URL`, `PUBLIC_SUPABASE_URL`,
    `SUPABASE_SERVICE_ROLE_KEY`. Read them from there; do not hardcode.
 
 2. **Fetch the row** with psql, as JSON. If given a short prefix, match on
@@ -32,7 +32,7 @@ Call it `$ID`.
 
    If no row, stop and say so.
 
-3. **Materialize the bundle** under `lawgrader/.bugs/<short-id>/`:
+3. **Materialize the bundle** under `.bugs/<short-id>/`:
    - `context.json` — the row's `context` field, pretty-printed (raw timeline,
      console, network, env).
    - `report.md` — a readable summary: the teacher's `expectation`, `route`,
@@ -46,7 +46,7 @@ Call it `$ID`.
    ```bash
    curl -s -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
      "$PUBLIC_SUPABASE_URL/storage/v1/object/feedback/<screenshot_path>" \
-     -o lawgrader/.bugs/<short-id>/screenshot.png
+     -o .bugs/<short-id>/screenshot.png
    ```
 
 5. **Read everything in — lead with what the teacher saw and said.** Start with
