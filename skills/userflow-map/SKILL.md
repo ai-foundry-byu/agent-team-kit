@@ -1,13 +1,13 @@
 ---
 name: userflow-map
-description: Work on the app's user-flow state-machine map in docs/userflow/. Use when the user wants to map a new screen, edit screen metadata (jobs, ways in, actions, ways out), wire transitions, add a screenshot/thumbnail, rebuild the flow graph, OR run the feedback loop — flag an issue / log feedback on a screen, reference an element by address (e.g. create.actions.3), or resolve/implement/close a flagged issue. Triggers on "add a screen to the userflow", "update/continue the user flow map", "map this screen", "flag X on the map", "log an issue", "fix/implement issue i1", "rebuild the flow diagram", or dropping a new screenshot for the flow doc.
+description: Work on the app's user-flow state-machine map in docs/userflow/. Use when the user wants to map a new screen, edit screen metadata (jobs, ways in, actions, ways out), wire transitions, add a screenshot/thumbnail, rebuild the flow graph, OR run the feedback loop, flag an issue / log feedback on a screen, reference an element by address (e.g. create.actions.3), or resolve/implement/close a flagged issue. Triggers on "add a screen to the userflow", "update/continue the user flow map", "map this screen", "flag X on the map", "log an issue", "fix/implement issue i1", "rebuild the flow diagram", or dropping a new screenshot for the flow doc.
 ---
 
 # userflow-map
 
 Maintains the data-driven UI state-machine documentation at
 `docs/userflow/`. The data is the single source of truth; the HTML graph and the
-markdown table are generated. **Always edit the JSON and rebuild — never hand-edit
+markdown table are generated. **Always edit the JSON and rebuild, never hand-edit
 the generated `userflow.html` or the table in `userflow.md`.**
 
 ## First step, always
@@ -30,7 +30,7 @@ the README wins.
 1. **Read** `docs/userflow/README.md`, then `docs/userflow/userflow.json` to see
    current nodes/edges and match existing style.
 
-2. **Screenshot (if adding a screen).** The user supplies the image — this skill
+2. **Screenshot (if adding a screen).** The user supplies the image, this skill
    does not capture screens. Move/rename it into `docs/userflow/screens/` as
    `NN-slug.png` (zero-padded number, kebab slug). For Mac screenshots with messy
    names, move by capture time to avoid hidden-character filenames:
@@ -69,14 +69,14 @@ the README wins.
 ## Logging / resolving issues (the feedback loop)
 
 When the user flags something (a product change or a map fix), add an entry to
-top-level `issues[]` in `userflow.json` — do NOT just make the change silently:
-- `target`: element address — `<nodeId>.<field>.<n>` (1-based, matches the card
+top-level `issues[]` in `userflow.json`, do NOT just make the change silently:
+- `target`: element address, `<nodeId>.<field>.<n>` (1-based, matches the card
   numbering, e.g. `create.actions.3`) or `<from>-><to>` for an edge.
 - `about`: `product` (change the app) | `map` (fix this map).
 - `severity`: `bug` | `change` | `idea` | `question`. `status`: `open`.
 - `note` (why) + optional `change` (the concrete edit). Stable `id` (i1, i2, …),
   never reused.
-Then `node build.mjs` — it renders on-map flags + an Issues panel + a punch-list.
+Then `node build.mjs`, it renders on-map flags + an Issues panel + a punch-list.
 When the change is implemented, flip the issue to `status: "done"` (keep it as the
 changelog; git holds the before/after). Bump the affected node's `verifiedAt` after
 re-checking it against the live app.
@@ -93,7 +93,7 @@ change (edit the real SvelteKit app), tracked by the map. Decide how to execute:
   one per issue, in parallel; use `isolation: "worktree"` if they touch overlapping
   files. Then reconcile the results.
 
-Either way, the main session **owns the loop and the bookkeeping** — don't delegate
+Either way, the main session **owns the loop and the bookkeeping**, don't delegate
 that: implement → run `pnpm check`/`pnpm build` (the grading barrel is server-coupled;
 build catches import-guard breaks `check` misses) → flip the issue to `status: "done"`
 → ask the user to re-screenshot → bump the node's `verifiedAt` → `node build.mjs`.

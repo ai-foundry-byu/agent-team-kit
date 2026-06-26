@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * SessionEnd — release the schema lock and dev-port claim this session owns.
+ * SessionEnd, release the schema lock and dev-port claim this session owns.
  *
  * Best-effort cleanup so a tidy exit frees resources immediately. If a session
  * dies without SessionEnd firing, the staleness leases in bash-guard / dev-port
@@ -16,7 +16,7 @@ function ownsThenRemove(dir, session) {
     if (owner.session === session)
       rmSync(dir, { recursive: true, force: true });
   } catch {
-    /* not ours / unreadable — leave it for the staleness lease */
+    /* not ours / unreadable, leave it for the staleness lease */
   }
 }
 

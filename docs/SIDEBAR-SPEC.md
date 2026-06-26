@@ -1,4 +1,4 @@
-# The collapsible sidebar — a build spec
+# The collapsible sidebar, a build spec
 
 A stack-agnostic specification for a **collapsible left navigation rail** in the Claude-web model: an expanded panel that collapses to an icon-only rail (and optionally a thin closed strip), where **every icon holds its exact vertical position across the collapse**. That pinning is the signature of the pattern and the thing most implementations get subtly wrong.
 
@@ -60,7 +60,7 @@ You can ship a simpler **binary** version first (a boolean `collapsed`, panel vs
 +--------------------------------------+
 ```
 
-**Collapsed rail** — note every `(◇)` sits at the **same vertical position** as above:
+**Collapsed rail**, note every `(◇)` sits at the **same vertical position** as above:
 
 ```
 +------+
@@ -90,7 +90,7 @@ Every nav row keeps its icon at the exact same vertical pixel position whether e
 
 1. **A frozen icon column.** Every row begins with a fixed-width, non-shrinking icon box at x=0:
    - width = the rail width (e.g. **40px**), `flex: none` (never grows or shrinks), icon centered both axes (e.g. a 16px glyph in the 40px box).
-   - The nav body has **no left padding** — the icon column *is* the left edge. So when collapsed, that column fills the rail exactly; when expanded, it's the anchor and the label sits to its right.
+   - The nav body has **no left padding**, the icon column *is* the left edge. So when collapsed, that column fills the rail exactly; when expanded, it's the anchor and the label sits to its right.
 
 2. **Fixed row heights.** Every row is a fixed height so nothing reflows when text disappears:
    - item rows: **32px**; section-header rows: **28px** (with a small top margin for grouping); footer row: **32px**.
@@ -104,7 +104,7 @@ Every nav row keeps its icon at the exact same vertical pixel position whether e
 
    Because the header's box height is preserved, the icon row *below* it never shifts. This is the single most important detail: a header that would otherwise collapse to zero height is the classic cause of icons "jumping" on collapse.
 
-**The mantra:** the sidebar shrinks *to the right*. The icon column never moves; labels and affordances simply stop rendering. If you ever reach for absolute positioning or per-state re-centering to make the icons line up, step back — the fixed-column + fixed-row-height approach makes it fall out for free.
+**The mantra:** the sidebar shrinks *to the right*. The icon column never moves; labels and affordances simply stop rendering. If you ever reach for absolute positioning or per-state re-centering to make the icons line up, step back, the fixed-column + fixed-row-height approach makes it fall out for free.
 
 ---
 
@@ -113,8 +113,8 @@ Every nav row keeps its icon at the exact same vertical pixel position whether e
 ### Header
 
 - **Wordmark** (full brand text) when the panel is wide enough (≥ ~240px); a compact **lettermark** when narrower; nothing in the rail except the toggle.
-- **Version chip** — a small rounded pill immediately right of the wordmark showing `v{version}`, linking to the release-notes surface (section 8). Hidden when the wordmark is hidden.
-- **Collapse toggle** — a split-pane glyph. Right-aligned in the panel header; fills the header in the rail. Bound to a keyboard shortcut (e.g. `Cmd/Ctrl + \`).
+- **Version chip**, a small rounded pill immediately right of the wordmark showing `v{version}`, linking to the release-notes surface (section 8). Hidden when the wordmark is hidden.
+- **Collapse toggle**, a split-pane glyph. Right-aligned in the panel header; fills the header in the rail. Bound to a keyboard shortcut (e.g. `Cmd/Ctrl + \`).
 
 ### Body (scrollable)
 
@@ -130,16 +130,16 @@ The body scrolls independently between the fixed header and footer (hide the scr
 
 One section can be a **progress stepper** (in the source app: Assignment → Rubric → Submissions → Report). Each step header carries a status node on a vertical spine:
 
-- **Done** — filled accent circle with a white check.
-- **Current** — filled accent circle with the step number, ringed.
-- **To-do** — hollow circle with a muted number.
-- **Connectors** — a short vertical hairline between consecutive nodes (not after the last).
+- **Done**, filled accent circle with a white check.
+- **Current**, filled accent circle with the step number, ringed.
+- **To-do**, hollow circle with a muted number.
+- **Connectors**, a short vertical hairline between consecutive nodes (not after the last).
 
 The current step is computed from gates (e.g. `current = !defined ? 'assignment' : !rubricDecided ? 'rubric' : !allConfirmed ? 'submissions' : 'report'`), and each step's state is `done / current / todo` by comparing to the current step. When collapsed, the stepper drops its indent and spine so the icons return to the rail column, and the step headers collapse to the same hairline dividers as any other header.
 
 ### Footer
 
-An account row pinned at the bottom (outside the scroll area): the avatar in the frozen icon column, then the user's name and a chevron when expanded. It's the trigger for an account popover (account, feedback, sign out, etc.). On collapse, only the avatar remains — same fixed 32px row, so it stays put.
+An account row pinned at the bottom (outside the scroll area): the avatar in the frozen icon column, then the user's name and a chevron when expanded. It's the trigger for an account popover (account, feedback, sign out, etc.). On collapse, only the avatar remains, same fixed 32px row, so it stays put.
 
 ---
 
@@ -182,7 +182,7 @@ Active state is best **derived from the current route** rather than stored, so n
 - **Persistence.** Persist the width (or the boolean) in `localStorage`. For SSR frameworks, also mirror it into a **cookie** so the server renders the correct width on first paint and avoids a flash. Hydrate from storage on mount.
 - **Transition.** Animate `width` / `transform` at ~150ms ease-out. **Suppress** the transition during drag and during route-driven snaps (so a forced collapse is instant, not a laggy slide), then re-enable it for manual toggles.
 - **Drag-to-resize** (optional). A thin `role="separator"` handle on the right edge: pointer-down starts a drag, pointer-move updates a transient width (no persist), pointer-up commits and persists. Snap to the closed strip below the strip breakpoint.
-- **Route-scoped auto-collapse.** Focus surfaces (a full-screen editor, a grading view) can collapse the sidebar **transiently — never persisted** — and restore the user's saved width on exit. This keeps the nav from getting "stuck" closed after an unexpected navigation.
+- **Route-scoped auto-collapse.** Focus surfaces (a full-screen editor, a grading view) can collapse the sidebar **transiently, never persisted**, and restore the user's saved width on exit. This keeps the nav from getting "stuck" closed after an unexpected navigation.
 - **Collapsed tooltips.** In the rail, hovering a row shows its label as a tooltip. **Render the tooltip outside the sidebar** (a fixed-position node) so it escapes the sidebar's stacking context, positioned just right of the rail and vertically centered on the hovered row.
 - **Keyboard + a11y.** Toggle shortcut (`Cmd/Ctrl + \`); `aria-current="page"` on the active item; `aria-label`s on icon-only controls; the resize handle is a labelled separator; focus-visible rings on rows.
 
@@ -249,7 +249,7 @@ The bundled [`push`](../skills/push/SKILL.md) skill is the producer for this con
 3. bumps the version in `releases.ts` and `package.json` together,
 4. commits as a release and pushes.
 
-So the sidebar spec and the skill interlock: **build the three pieces above** (version source, `releases` data, `/releases` surface), and `push` keeps them current every time you ship. The skill as bundled references these by the source app's names (`src/lib/content/releases.ts`, `CURRENT_VERSION`, `/releases`) — adapt those paths to where you put them. (See `docs/SKILLS.md` for why `push` is shaped the way it is.)
+So the sidebar spec and the skill interlock: **build the three pieces above** (version source, `releases` data, `/releases` surface), and `push` keeps them current every time you ship. The skill as bundled references these by the source app's names (`src/lib/content/releases.ts`, `CURRENT_VERSION`, `/releases`), adapt those paths to where you put them. (See `docs/SKILLS.md` for why `push` is shaped the way it is.)
 
 ---
 
@@ -270,14 +270,14 @@ The behavior and the **measurements** (frozen 40px icon column at x=0, fixed 32p
 
 ### Build checklist
 
-1. **State** — a `width` (or boolean `collapsed`) as the source of truth; derive panel/rail/strip; persist to `localStorage` + a cookie for SSR.
-2. **Shell** — fixed-position `aside` with a fixed header, a scrollable body (scrollbar hidden), and a fixed footer.
-3. **The frozen column** — a 40px, `flex:none`, centered icon box starting every row at x=0; nav body with no left padding.
-4. **Fixed rows** — 32px items, 28px headers; on collapse hide labels + trailing affordances; render section headers as a hairline divider that keeps the 28px box.
-5. **Items + affordances** — active state from the route; switcher carets, count badges, and (optionally) the progress stepper with done/current/todo nodes and connectors.
-6. **Toggle + drag** — the split-pane toggle (with a keyboard shortcut) flipping panel↔rail; optionally a draggable edge handle writing the transient width.
-7. **Transitions** — ~150ms ease-out on width/transform, suppressed during drag and route-snaps.
-8. **Collapsed tooltips** — rendered outside the sidebar, fixed, centered on the hovered row.
-9. **Footer** — the account row collapsing to just the avatar (same fixed row height).
-10. **Responsive** — off-canvas drawer + hamburger + backdrop below `md`; content margin = sidebar width on desktop only.
-11. **Version chip + release notes** — the three pieces above, wired to the bundled `push` skill.
+1. **State**, a `width` (or boolean `collapsed`) as the source of truth; derive panel/rail/strip; persist to `localStorage` + a cookie for SSR.
+2. **Shell**, fixed-position `aside` with a fixed header, a scrollable body (scrollbar hidden), and a fixed footer.
+3. **The frozen column**, a 40px, `flex:none`, centered icon box starting every row at x=0; nav body with no left padding.
+4. **Fixed rows**, 32px items, 28px headers; on collapse hide labels + trailing affordances; render section headers as a hairline divider that keeps the 28px box.
+5. **Items + affordances**, active state from the route; switcher carets, count badges, and (optionally) the progress stepper with done/current/todo nodes and connectors.
+6. **Toggle + drag**, the split-pane toggle (with a keyboard shortcut) flipping panel↔rail; optionally a draggable edge handle writing the transient width.
+7. **Transitions**, ~150ms ease-out on width/transform, suppressed during drag and route-snaps.
+8. **Collapsed tooltips**, rendered outside the sidebar, fixed, centered on the hovered row.
+9. **Footer**, the account row collapsing to just the avatar (same fixed row height).
+10. **Responsive**, off-canvas drawer + hamburger + backdrop below `md`; content margin = sidebar width on desktop only.
+11. **Version chip + release notes**, the three pieces above, wired to the bundled `push` skill.

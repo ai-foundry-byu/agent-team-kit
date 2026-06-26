@@ -15,12 +15,12 @@ A small set of conventions that keep an agent-driven repo tidy. They are stack-a
 ## Secrets
 
 - Never hardcode secrets or commit a real `.env`. Keep them in a secrets manager or a per-person `.env.local` (gitignored).
-- A client-side guard (like the kit's psql-DDL block) is a nudge, not a boundary. If integrity genuinely matters, enforce it where the resource lives — e.g. a database role without the dangerous privilege.
+- A client-side guard (like the kit's psql-DDL block) is a nudge, not a boundary. If integrity genuinely matters, enforce it where the resource lives, e.g. a database role without the dangerous privilege.
 
 ## Commits
 
 - Conventional prefixes (`feat:` / `fix:` / `chore:` / `docs:` / `refactor:` / `test:`), **one concern per commit**.
-- Stage **explicit paths**, never blanket-stage (`git add -A` / `git add .`) — the git-safety hook blocks the blanket forms, because on a shared tree they sweep in other agents' work.
+- Stage **explicit paths**, never blanket-stage (`git add -A` / `git add .`), the git-safety hook blocks the blanket forms, because on a shared tree they sweep in other agents' work.
 
 ## File size and boundaries
 

@@ -3,8 +3,8 @@
 #
 # The guard only acts on a few command shapes (dangerous git + schema/DB/dep
 # commands). Spawning node for EVERY Bash call to discover that most don't
-# match wastes ~35ms each. So gate it with shell BUILTINS only — `read` + a
-# `case` glob — which spawn ZERO extra processes. The common path (ls, cat,
+# match wastes ~35ms each. So gate it with shell BUILTINS only, `read` + a
+# `case` glob, which spawn ZERO extra processes. The common path (ls, cat,
 # pnpm test, git status/diff) costs only shell startup; node runs solely for
 # commands that could actually be blocked. A false match just pays node and
 # gets allowed, so correctness never depends on the glob being exact.

@@ -5,13 +5,13 @@
  * restricted module must be on the allowlist, or the gate fails. Use it for a
  * dangerous capability you want kept rare and intentional. The canonical
  * example (and the default below) is a privilege-escalating server DB client
- * that BYPASSES row-level security — every import of it is a place the safety
+ * that BYPASSES row-level security, every import of it is a place the safety
  * net is off, so it should exist only where the caller's own RLS genuinely
  * cannot do the work, with a comment at the call site saying why.
  *
  * Ratchet model: grandfather the current importers, fail any NEW one. The list
  * may only SHRINK. To add a genuinely-needed importer, add it here WITH a
- * reason in the call-site comment — the friction is the point.
+ * reason in the call-site comment, the friction is the point.
  *
  * ── CONFIG (edit for your project) ──────────────────────────────────────────
  */

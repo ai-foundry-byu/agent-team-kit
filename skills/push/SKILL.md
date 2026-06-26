@@ -1,9 +1,9 @@
 ---
 name: push
-description: Cut a release and push main to GitHub (which triggers the paid Vercel production build). Writes customer-facing release notes for everything committed since the last release, adds them to the in-app Releases tab (src/lib/content/releases.ts), bumps the version (patch by default), commits the release, then pushes. Use when the user says "push", "ship it", "cut a release", "release and push", or "deploy". This is the ONLY sanctioned way to push — the standing rule is commit-don't-push, and invoking this skill is the user's explicit push authorization for this one run.
+description: Cut a release and push main to GitHub (which triggers the paid Vercel production build). Writes customer-facing release notes for everything committed since the last release, adds them to the in-app Releases tab (src/lib/content/releases.ts), bumps the version (patch by default), commits the release, then pushes. Use when the user says "push", "ship it", "cut a release", "release and push", or "deploy". This is the ONLY sanctioned way to push, the standing rule is commit-don't-push, and invoking this skill is the user's explicit push authorization for this one run.
 ---
 
-# push — cut a release, then push to GitHub/Vercel
+# push, cut a release, then push to GitHub/Vercel
 
 Pushing `main` triggers a paid Vercel production build, so a push should always
 ship as a *release*: versioned, with customer-facing notes in the app. This
@@ -20,13 +20,13 @@ turns.
 ## Procedure
 
 1. **Preflight.**
-   - `git status --short` — only release files may be staged by this skill.
+   - `git status --short`, only release files may be staged by this skill.
      Unrelated dirty files stay untracked/unstaged; never sweep them in.
    - Confirm you are on `main` and the working tree has no staged changes you
      didn't make. If there are uncommitted changes that look like they belong
      in the release (work the user just finished), stop and ask whether to
      commit them first.
-   - `git log origin/main..HEAD --oneline` after a `git fetch origin` — know
+   - `git log origin/main..HEAD --oneline` after a `git fetch origin`, know
      exactly what the push will publish.
 
 2. **Collect what shipped.** Find the last commit that touched
@@ -41,7 +41,7 @@ turns.
    - `summary`: one sentence naming the headline themes.
    - `sections`: group by customer-visible theme (match the headings style of
      prior entries). Voice rules (BRAND.md + memory): plain factual copy,
-     assistant-not-replacement, **no em dashes**, no internal jargon — write
+     assistant-not-replacement, **no em dashes**, no internal jargon, write
      what a teacher sees, not commit subjects. Omit pure-internal work (CI,
      refactors, test scripts, docs); a "Fixes and polish" section may collect
      small visible fixes. Do not oversell or invent.
@@ -52,18 +52,18 @@ turns.
 
 5. **Verify.** `pnpm check` must pass. (Full `pnpm build` is not required for
    a notes+version change, but if other unpushed commits never saw a build,
-   consider `source ~/.nvm/nvm.sh && nvm use 20 && pnpm build` — pushes are
+   consider `source ~/.nvm/nvm.sh && nvm use 20 && pnpm build`, pushes are
    expensive to get wrong.)
 
 6. **Commit.** Stage ONLY `src/lib/content/releases.ts` and `package.json`.
    Commit as `chore(release): v<version>` with a body listing the headline
    themes.
-   - **GUARD: commit, tag, and push are SEPARATE steps — never chain them in
+   - **GUARD: commit, tag, and push are SEPARATE steps, never chain them in
      one `;`-joined command.** The `.githooks/pre-commit` gate can reject the
      release commit (e.g. prettier wants single quotes around a string that
      contains `"..."`). If you chain `commit; tag; push`, a blocked commit does
      NOT stop the tag/push, so you publish the prior HEAD WITHOUT the version
-     bump and tag the wrong commit — and the recovery push is a SECOND paid
+     bump and tag the wrong commit, and the recovery push is a SECOND paid
      build. Run the commit alone, confirm it created a new HEAD
      (`git log --oneline -1` shows `chore(release): v<version>`), and only then
      tag: `git tag v<version>`. If the commit is blocked, `prettier --write` the
@@ -78,6 +78,6 @@ turns.
 
 ## Failure handling
 
-- If `pnpm check` fails, fix or report — do not push a broken release.
+- If `pnpm check` fails, fix or report, do not push a broken release.
 - If the push is rejected (remote ahead), `git pull --rebase origin main`,
   re-verify, and push again. Never force-push.

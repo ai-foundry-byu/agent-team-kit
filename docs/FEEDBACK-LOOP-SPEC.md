@@ -1,4 +1,4 @@
-# The feedback loop — a build spec
+# The feedback loop, a build spec
 
 A stack-agnostic specification for an **AI-native in-app feedback and bug-reporting loop**: a widget that captures a report with rich machine context, an admin inbox to triage it, a handoff that loads that full context into a coding agent, and a close-the-loop step that resolves the report and notifies the reporter, bound to the fix commit itself.
 
@@ -63,7 +63,7 @@ The result is a feedback channel where reporting is cheap, fixing is well-inform
 
 ---
 
-## Part A — The widget (client)
+## Part A, The widget (client)
 
 ### Mounting and positioning
 
@@ -142,11 +142,11 @@ On Send: snapshot the form values, `POST` the bundle to the intake endpoint, opt
 
 ---
 
-## Part B — Data model
+## Part B, Data model
 
 Three tables plus a private storage bucket. SQL is plain Postgres; the RLS blocks are Supabase-specific with a generic note after.
 
-### `bug_reports` — the report
+### `bug_reports`, the report
 
 ```sql
 create table bug_reports (
@@ -204,10 +204,10 @@ create index bug_reports_duplicate_of_idx  on bug_reports (duplicate_of) where d
 ```
 
 The two constraints worth calling out, because they encode the loop's discipline at the database level:
-- **`fixed_requires_note`** — you cannot mark a report `fixed` without a reporter-facing note. This is what guarantees the loop actually closes *to the reporter*, not just internally. The skill and the git hook both honor it; the DB enforces it as a backstop.
-- **`resolution_requires_resolved`** — a resolution only exists on a resolved report. No half-states.
+- **`fixed_requires_note`**, you cannot mark a report `fixed` without a reporter-facing note. This is what guarantees the loop actually closes *to the reporter*, not just internally. The skill and the git hook both honor it; the DB enforces it as a backstop.
+- **`resolution_requires_resolved`**, a resolution only exists on a resolved report. No half-states.
 
-### `bug_messages` — the two-way thread
+### `bug_messages`, the two-way thread
 
 ```sql
 create table bug_messages (
@@ -240,7 +240,7 @@ create trigger bug_messages_touch_parent_t
 
 *(Generic equivalent: do this update in your application's "post a message" handler instead of a DB trigger.)*
 
-### `bug_events` — the audit log
+### `bug_events`, the audit log
 
 Every lifecycle transition is appended here, so the report's history is reconstructable.
 
@@ -271,7 +271,7 @@ insert into storage.buckets (id, name, public) values ('feedback', 'feedback', f
 
 Private (never public). One PNG per report at `{report_id}/screenshot.png`. The server (service role) uploads on intake; admins read via short-lived **signed URLs** (~10–15 min). *(Generic equivalent: any object store with a private bucket and presigned GET URLs, e.g. S3.)*
 
-### Authorization (RLS — Supabase-specific, with the generic rule)
+### Authorization (RLS, Supabase-specific, with the generic rule)
 
 ```sql
 alter table bug_reports enable row level security;
@@ -295,7 +295,7 @@ create policy "admin update" on bug_reports for update using (is_global_admin())
 
 ---
 
-## Part C — The context bundle (JSON shape)
+## Part C, The context bundle (JSON shape)
 
 Stored verbatim in `bug_reports.context`. This is what makes agent-side repro possible.
 
@@ -329,9 +329,9 @@ Every ring is capped (~25 entries) and every string is scrubbed and length-clamp
 
 ---
 
-## Part D — Backend plumbing
+## Part D, Backend plumbing
 
-### Intake endpoint — `POST /api/feedback/report`
+### Intake endpoint, `POST /api/feedback/report`
 
 Receives the bundle and:
 
@@ -343,7 +343,7 @@ Receives the bundle and:
 
 Returns `{ ok: true, id }`.
 
-### The repair bundle — `buildRepairMarkdown(row)`
+### The repair bundle, `buildRepairMarkdown(row)`
 
 A pure function that renders a report row into a readable markdown brief for the agent (the skill reads this plus the raw `context` JSON). Shape:
 
@@ -359,7 +359,7 @@ A pure function that renders a report row into a readable markdown brief for the
 
 Keep it a pure function so it powers both the inbox's "copy repair bundle" and the skill's local materialization.
 
-### The single close path — `resolveBug(db, id, input)`
+### The single close path, `resolveBug(db, id, input)`
 
 Every close, from the admin UI, the CLI, or the commit hook, goes through one function so the rules and the notification can't be bypassed.
 
@@ -378,7 +378,7 @@ Steps: validate (`fixed` without a note throws), sanitize (clamp the note, drop 
 
 A matching `reopenBug()` clears the resolution fields and appends a `reopened` event.
 
-### CLI — `bug:resolve`
+### CLI, `bug:resolve`
 
 A thin script over `resolveBug()` for the agent and the hook:
 
@@ -391,7 +391,7 @@ Conveniences: default `--resolution fixed`; if `fixed` and no `--commit`, defaul
 
 ---
 
-## Part E — Closing the loop
+## Part E, Closing the loop
 
 ### The `post-commit` git hook (the keystone)
 
@@ -399,7 +399,7 @@ This is what makes "fix" and "close" a single action. On every commit, the hook 
 
 ```sh
 #!/bin/sh
-# post-commit — if this commit fixes a reported bug, close it and notify the reporter.
+# post-commit, if this commit fixes a reported bug, close it and notify the reporter.
 msg=$(git log -1 --pretty=%B)
 id=$(printf '%s' "$msg" | sed -n 's/.*(bug \([0-9a-f][0-9a-f-]\{5,\}\)).*/\1/p' | head -1)
 [ -z "$id" ] && exit 0                                  # not a bug-fixing commit -> no-op
@@ -412,7 +412,7 @@ if [ -n "$resolution" ] && [ "$resolution" != "fixed" ]; then
 elif [ -n "$note" ]; then
   pnpm bug:resolve "$id" --via commit --note "$note"
 else
-  echo "WARNING: commit landed but bug $id was NOT closed — a 'fixed' close needs a 'Bug-Note:' trailer."
+  echo "WARNING: commit landed but bug $id was NOT closed, a 'fixed' close needs a 'Bug-Note:' trailer."
   echo "         amend it (git commit --amend) or run: pnpm bug:resolve $id --note \"...\""
 fi
 exit 0   # never fail the commit; it already landed
@@ -429,34 +429,34 @@ Bug-Resolution: fixed
 
 Rules: the hook is a no-op on commits without `(bug <id>)`, it never fails the commit, and it warns loudly if a fix lacks the required `Bug-Note:` (the DB also refuses a noteless `fixed`). *(This hook is wired the same way as the kit's other git hooks: `core.hooksPath` + `bootstrap.sh`.)*
 
-### What the reporter sees — the `/feedback` page
+### What the reporter sees, the `/feedback` page
 
 The reporter-facing surface lists the user's own reports with **reporter-safe status labels** (never the internal `open/triaged/resolved`): "Submitted", "Reviewing", "Fixed" (or "Reviewed" for a non-fixed close). Each report card shows a status timeline, their original words and screenshot, the two-way message thread, and, when fixed, the warm `reporter_note`. The reporter can **reply** in the thread, and **reopen** a report if the fix didn't actually resolve it. A small impact badge ("you've sent N reports, M shipped a fix") makes reporting feel worthwhile. Notifications deep-link here.
 
 ---
 
-## Part F — The admin inbox and triage
+## Part F, The admin inbox and triage
 
-### Inbox — `/admin/bugs`
+### Inbox, `/admin/bugs`
 
-Lists reports filtered by status (`open` default, then `triaged`, `resolved`), newest first. Each row: a kind icon (bug / confusing / idea), the truncated description (or "({kind} — no note, see context)"), a metadata line (`route · vX · timeago`), and right-side badges (severity, resolution, a camera icon if a screenshot exists). Click through to the detail page.
+Lists reports filtered by status (`open` default, then `triaged`, `resolved`), newest first. Each row: a kind icon (bug / confusing / idea), the truncated description (or "({kind}, no note, see context)"), a metadata line (`route · vX · timeago`), and right-side badges (severity, resolution, a camera icon if a screenshot exists). Click through to the detail page.
 
-### Detail and triage — `/admin/bugs/{id}`
+### Detail and triage, `/admin/bugs/{id}`
 
 Loads the full row, the reporter's profile, a **signed URL** for the screenshot, the message thread, and the rendered repair markdown, and computes the `/fix-bug {id}` command.
 
 Top actions:
-- **Open in Claude Code** — copies `/fix-bug {id}` to the clipboard (the handoff to the agent).
-- **Copy repair bundle** — copies the markdown + context for local/AI use.
-- **Fixed** — opens a form (required `reporter_note`, optional `fixed_commit`) → `resolve` with `resolution='fixed'`.
-- **Close as…** — quick buttons for `noise` / `wontfix` / `by_design`, and a `duplicate` (with a canonical id).
-- **Reopen** — if resolved, clears the resolution and re-opens.
+- **Open in Claude Code**, copies `/fix-bug {id}` to the clipboard (the handoff to the agent).
+- **Copy repair bundle**, copies the markdown + context for local/AI use.
+- **Fixed**, opens a form (required `reporter_note`, optional `fixed_commit`) → `resolve` with `resolution='fixed'`.
+- **Close as…**, quick buttons for `noise` / `wontfix` / `by_design`, and a `duplicate` (with a canonical id).
+- **Reopen**, if resolved, clears the resolution and re-opens.
 
 Triage panel (when `open`): set `severity` (low/med/high) and a `summary`; moves `status: open → triaged`, stamps `triaged_at`, logs a `triaged` event. The page also renders the context as readable widgets: the breadcrumb trail, failed network requests highlighted, console errors, the screenshot, the last-clicked element, and the environment. The **message thread** lets the team ask the reporter a clarifying question (`ask` action posts a `team` message and notifies the reporter "We have a question about your report").
 
 ---
 
-## Part G — Building it in your stack
+## Part G, Building it in your stack
 
 ### Supabase-specific vs generic
 
@@ -474,15 +474,15 @@ The behavior, the schema, the constraints, and the loop are the spec. Auth, stor
 
 ### Build checklist for a coding agent
 
-1. **Schema** — create `bug_reports`, `bug_messages`, `bug_events`, the private screenshot bucket, the two load-bearing CHECK constraints, the indexes, and the thread-denormalization trigger (or its app-layer equivalent). Add authorization (RLS or app-layer) per Part B.
-2. **Capture lib** — global ring buffers (console/network/errors/breadcrumbs, cap ~25), the client-side secret scrubber, and `buildContext()`.
-3. **Widget** — the docked launcher + panel with the three fields and four states, the screenshot capture (warm on pointerdown, exclude the widget), the keyboard chord, and `submitReport()` with localStorage retry.
-4. **Intake endpoint** — rate-limit, screenshot upload, server-stamped metadata, insert, `created` event.
-5. **Resolution core** — `buildRepairMarkdown()`, `resolveBug()` (with the `fixed`-needs-a-note rule and the reporter notification), `reopenBug()`, and the `bug:resolve` CLI.
-6. **Close-the-loop** — the `post-commit` hook and the commit-trailer convention.
-7. **Reporter surface** — the `/feedback` page (safe status labels, thread, reopen, impact badge) and the notification deep-link.
-8. **Admin inbox** — list + detail/triage, signed-URL screenshots, the "Open in Claude Code" handoff, and the resolve/triage/reopen/ask actions.
-9. **Wire the agent side** — install the [`fix-bug`](../skills/fix-bug/SKILL.md) skill so `/fix-bug <id>` pulls the row, materializes the repair markdown + context + screenshot, and follows the verify-first procedure before fixing and committing with a `Bug-Note:`.
+1. **Schema**, create `bug_reports`, `bug_messages`, `bug_events`, the private screenshot bucket, the two load-bearing CHECK constraints, the indexes, and the thread-denormalization trigger (or its app-layer equivalent). Add authorization (RLS or app-layer) per Part B.
+2. **Capture lib**, global ring buffers (console/network/errors/breadcrumbs, cap ~25), the client-side secret scrubber, and `buildContext()`.
+3. **Widget**, the docked launcher + panel with the three fields and four states, the screenshot capture (warm on pointerdown, exclude the widget), the keyboard chord, and `submitReport()` with localStorage retry.
+4. **Intake endpoint**, rate-limit, screenshot upload, server-stamped metadata, insert, `created` event.
+5. **Resolution core**, `buildRepairMarkdown()`, `resolveBug()` (with the `fixed`-needs-a-note rule and the reporter notification), `reopenBug()`, and the `bug:resolve` CLI.
+6. **Close-the-loop**, the `post-commit` hook and the commit-trailer convention.
+7. **Reporter surface**, the `/feedback` page (safe status labels, thread, reopen, impact badge) and the notification deep-link.
+8. **Admin inbox**, list + detail/triage, signed-URL screenshots, the "Open in Claude Code" handoff, and the resolve/triage/reopen/ask actions.
+9. **Wire the agent side**, install the [`fix-bug`](../skills/fix-bug/SKILL.md) skill so `/fix-bug <id>` pulls the row, materializes the repair markdown + context + screenshot, and follows the verify-first procedure before fixing and committing with a `Bug-Note:`.
 
 ### How it pairs with the `fix-bug` skill
 

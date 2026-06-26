@@ -1,5 +1,5 @@
 #!/bin/sh
-# install.sh — wire the agent-team-kit into a project (new OR existing).
+# install.sh, wire the agent-team-kit into a project (new OR existing).
 #
 #   ./install.sh /path/to/project
 #
@@ -19,11 +19,11 @@ mkdir -p "$TARGET/scripts/hooks" "$TARGET/.githooks" "$TARGET/.claude/skills"
 cp "$KIT"/hooks/scripts/* "$TARGET/scripts/hooks/"
 cp "$KIT/hooks/githooks/post-merge" "$TARGET/.githooks/post-merge"
 chmod +x "$TARGET/.githooks/post-merge"
-# Git gates (pre-commit arch guard + pre-push test gate) — only if ABSENT, so a
+# Git gates (pre-commit arch guard + pre-push test gate), only if ABSENT, so a
 # project's existing hooks are never clobbered. If present, the user merges them.
 for gh in pre-commit pre-push; do
   if [ -f "$TARGET/.githooks/$gh" ]; then
-    echo "[!] .githooks/$gh exists — merge the kit's version ($KIT/hooks/githooks/$gh) by hand"
+    echo "[!] .githooks/$gh exists, merge the kit's version ($KIT/hooks/githooks/$gh) by hand"
   else
     cp "$KIT/hooks/githooks/$gh" "$TARGET/.githooks/$gh"
     chmod +x "$TARGET/.githooks/$gh"
@@ -43,11 +43,11 @@ if [ ! -f "$TARGET/.claude/settings.json" ]; then
   cp "$KIT/hooks/settings.json" "$TARGET/.claude/settings.json"
   echo "[ok] .claude/settings.json installed"
 else
-  echo "[!] .claude/settings.json exists — merge the hooks blocks from"
+  echo "[!] .claude/settings.json exists, merge the hooks blocks from"
   echo "    $KIT/hooks/settings.json into it by hand (additive)"
 fi
 
-# 3. .gitignore — make the wiring + skills shareable (append-only, safe).
+# 3. .gitignore, make the wiring + skills shareable (append-only, safe).
 GI="$TARGET/.gitignore"; touch "$GI"
 if grep -qF '!.claude/skills/' "$GI"; then
   echo "[ok] .gitignore already shares the .claude wiring"
@@ -60,17 +60,17 @@ else
   echo "[ok] appended .claude share rules to .gitignore"
 fi
 
-# 4. CLAUDE.md — the concurrent-agents rules (append-only, guarded).
+# 4. CLAUDE.md, the concurrent-agents rules (append-only, guarded).
 CM="$TARGET/CLAUDE.md"
 if [ -f "$CM" ] && grep -qF 'Concurrent agents on' "$CM"; then
   echo "[ok] CLAUDE.md already has the concurrent-agents section"
 else
   [ -f "$CM" ] && printf '\n' >> "$CM"
-  awk 'f; /-->/{f=1}' "$KIT/snippets/CLAUDE-md-section.md" >> "$CM"
+  awk 'f; /-->/{f=1}' "$KIT/snippets/CLAUDE-md-main.md" >> "$CM"
   echo "[ok] appended the concurrent-agents section to CLAUDE.md"
 fi
 
-# 4b. CLAUDE.md — the working-discipline / definition-of-done section.
+# 4b. CLAUDE.md, the working-discipline / definition-of-done section.
 if [ -f "$CM" ] && grep -qF 'Working discipline' "$CM"; then
   echo "[ok] CLAUDE.md already has the working-discipline section"
 else
@@ -101,7 +101,7 @@ Installed into $TARGET. Next:
   4. Start a FRESH Claude Code session so the hooks + skills load.
   5. Adding a teammate later? They clone and run ./bootstrap.sh.
   6. Prefer worktrees to stay-on-main? Source worktree-commands.sh for the
-     wt / cockpit / wtmerge commands — see the kit's docs/WORKTREE-MODE.md.
+     wt / cockpit / wtmerge commands, see the kit's docs/WORKTREE-MODE.md.
 
 Pick the full path for your case in docs/ADOPT.md.
 EOF

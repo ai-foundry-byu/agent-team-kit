@@ -2,12 +2,12 @@
  * Single source of truth for the file-size guard (config + helpers).
  *
  * Consumed by:
- *   - arch-check.mjs        the CLI gate (pre-commit / CI) — fails on violation
- *   - file-size-nudge.mjs   the in-session PostToolUse nudge — advisory
+ *   - arch-check.mjs        the CLI gate (pre-commit / CI), fails on violation
+ *   - file-size-nudge.mjs   the in-session PostToolUse nudge, advisory
  *
  * The number is an ALARM that says "go look", not a law. A large file is a smell
  * of low cohesion (several unrelated jobs in one scope). The fix is never "get
- * under the number" — it is "split along the real seam, or confirm this is one
+ * under the number", it is "split along the real seam, or confirm this is one
  * cohesive concern and exempt it." Plain ESM so Node imports it from a hook
  * without a TS loader.
  *
@@ -17,7 +17,7 @@
 /** New files may not exceed this. The tripwire, not a target. */
 export const BUDGET = 800;
 
-/** Generated / not-our-code — skipped entirely. @type {Set<string>} */
+/** Generated / not-our-code, skipped entirely. @type {Set<string>} */
 export const GENERATED = new Set([
   // "src/types/generated.ts",
 ]);
@@ -34,7 +34,7 @@ export const EXEMPT = {
  * Oversized files being paid down. Ceiling = current line count; SHRINK-ONLY.
  * Seed this by running `arch-check.mjs` once and pasting the over-budget files
  * here. Lower each number as you reclaim lines; delete the entry once under
- * BUDGET. New giants are NOT allowed — split them instead of freezing them.
+ * BUDGET. New giants are NOT allowed, split them instead of freezing them.
  * @type {Record<string, number>}
  */
 export const FROZEN = {

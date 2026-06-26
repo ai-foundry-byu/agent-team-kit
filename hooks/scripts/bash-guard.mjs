@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * PreToolUse (Bash) — guards for many-agents-on-one-`main`.
+ * PreToolUse (Bash), guards for many-agents-on-one-`main`.
  *
- *  A. Git safety — block tree-wide staging / destructive commands that would
+ *  A. Git safety, block tree-wide staging / destructive commands that would
  *     sweep in OR destroy other agents' uncommitted work in the shared tree.
- *  B. Schema lock — serialize DB/schema/dependency-mutating commands behind a
+ *  B. Schema lock, serialize DB/schema/dependency-mutating commands behind a
  *     single repo-wide lease so two agents can't migrate or seed at once.
  *
  * One hook (not two) so each Bash call spawns one process. Exit 2 + stderr
@@ -27,12 +27,12 @@ const LEASE_SECONDS = 600; // a held schema lock becomes stealable after 10 min 
 // subcommand, so quoted/parenthetical mentions don't false-trip.
 // `sharedTreeOnly` blocks exist solely to protect a SHARED working tree; they
 // auto-relax inside a linked worktree (worktree mode), where each agent's tree
-// is its own. Force-push has no such flag — it's dangerous from anywhere. ---
+// is its own. Force-push has no such flag, it's dangerous from anywhere. ---
 const GIT_BLOCKS = [
   {
     sharedTreeOnly: true,
     re: /\bgit\s+add\s+(-A\b|--all\b|\.(?:\s|$))/,
-    msg: "Blanket `git add` stages the WHOLE working tree — on shared `main` that sweeps in other agents' in-flight changes. Stage explicit paths: `git add <file> <file>`.",
+    msg: "Blanket `git add` stages the WHOLE working tree, on shared `main` that sweeps in other agents' in-flight changes. Stage explicit paths: `git add <file> <file>`.",
   },
   {
     sharedTreeOnly: true,
@@ -42,7 +42,7 @@ const GIT_BLOCKS = [
   {
     sharedTreeOnly: true,
     re: /\bgit\s+reset\s+--hard\b/,
-    msg: "`git reset --hard` discards the ENTIRE working tree — it would destroy other agents' uncommitted work. Revert only your own paths (`git checkout -- <file>`), or ask the human.",
+    msg: "`git reset --hard` discards the ENTIRE working tree, it would destroy other agents' uncommitted work. Revert only your own paths (`git checkout -- <file>`), or ask the human.",
   },
   {
     sharedTreeOnly: true,

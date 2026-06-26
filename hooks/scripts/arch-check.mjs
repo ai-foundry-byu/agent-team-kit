@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Architecture-guard CLI — the gate behind the in-session nudge.
+ * Architecture-guard CLI, the gate behind the in-session nudge.
  *
  * Runs the file-size + import-boundary guards over the files passed as args
  * (pass the staged files from a pre-commit hook), or the whole `src/` tree if
@@ -75,14 +75,14 @@ for (const f of files) {
       problems.push(
         rel in FROZEN
           ? `file-size: ${rel} is ${lines} lines, past its frozen ceiling ${ceiling} (shrink-only).`
-          : `file-size: ${rel} is ${lines} lines, over the ${BUDGET}-line budget — split it, or EXEMPT/FROZEN it in file-size-budget.mjs with a reason.`,
+          : `file-size: ${rel} is ${lines} lines, over the ${BUDGET}-line budget, split it, or EXEMPT/FROZEN it in file-size-budget.mjs with a reason.`,
       );
     }
   }
 
   if (importsRestrictedUnlisted(rel, content)) {
     problems.push(
-      `import-boundary: ${rel} imports the restricted module and isn't on the ALLOWLIST — use the safe path, or allowlist it in import-boundaries.mjs with a call-site reason.`,
+      `import-boundary: ${rel} imports the restricted module and isn't on the ALLOWLIST, use the safe path, or allowlist it in import-boundaries.mjs with a call-site reason.`,
     );
   }
 }

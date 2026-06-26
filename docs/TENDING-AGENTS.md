@@ -2,7 +2,7 @@
 
 When you fire several agents and step away, three things make it work: **see** what they're doing, **reach** them from your phone, and **keep the machine awake** so they keep running and stay reachable. Each is a small config, set once.
 
-## 1. Verbose — see more of what's happening
+## 1. Verbose: see more of what's happening
 
 Verbose mode shows far more of each session's activity (tool calls, reasoning, what's actually running), which is what you want when you're supervising several agents or reviewing what one did while you were away.
 
@@ -11,7 +11,7 @@ Verbose mode shows far more of each session's activity (tool calls, reasoning, w
 
 (The kit's setup sets the global default for you.)
 
-## 2. Remote control — tend agents from the Claude app
+## 2. Remote control: tend agents from the Claude app
 
 Remote control links a session to the Claude app/web, so a running session shows up there and you can read it and send messages from your phone while away from the computer.
 
@@ -29,7 +29,7 @@ The goal: when you walk away, the **screen can dim or sleep** (saves power, and 
 
 - **Persistent (plugged in):** System Settings → Battery → **Options…** → turn ON **"Prevent automatic sleeping on power adapter when the display is off."** The display still sleeps and dims; the Mac stays awake while on power.
   - CLI equivalent: `sudo pmset -c disablesleep 1` (or the gentler `sudo pmset -c sleep 0`). `-c` = on the power adapter. Undo with `sudo pmset -c disablesleep 0` (or restore your sleep minutes).
-- **Ad-hoc / on battery:** `caffeinate -i` in a spare terminal keeps the *system* awake while letting the *display* sleep — exactly "screen dims, Mac stays on." Ctrl-C to stop, or time-limit it: `caffeinate -i -t 7200` (2 hours). It works unplugged too (it'll drain the battery).
+- **Ad-hoc / on battery:** `caffeinate -i` in a spare terminal keeps the *system* awake while letting the *display* sleep, exactly "screen dims, Mac stays on." Ctrl-C to stop, or time-limit it: `caffeinate -i -t 7200` (2 hours). It works unplugged too (it'll drain the battery).
 - **Lid:** closing the lid sleeps the Mac regardless of the above. Keep the lid **open** while away, or run in clamshell mode with external power + display.
 
 ### Windows
@@ -37,7 +37,7 @@ The goal: when you walk away, the **screen can dim or sleep** (saves power, and 
 - **Persistent (plugged in):** Settings → System → **Power & battery** → **Screen and sleep** → set **"When plugged in, put my device to sleep after"** to **Never**. Keep **"turn off my screen after"** at a few minutes so the screen still dims.
   - CLI equivalent: `powercfg /change standby-timeout-ac 0` (never sleep on AC) and `powercfg /change monitor-timeout-ac 10` (screen off after 10 min). Undo by setting `standby-timeout-ac` back to your preferred minutes.
 - **Lid:** Settings → System → Power → **"When I close the lid"** (plugged in) → **Do nothing**, to keep running with the lid closed.
-- **Ad-hoc caffeinate-equivalent:** **PowerToys Awake** (part of Microsoft PowerToys) — toggle "keep awake," and optionally keep the screen on or let it turn off. It's the closest thing to `caffeinate`. (The older standalone *Caffeine* app also works.)
+- **Ad-hoc caffeinate-equivalent:** **PowerToys Awake** (part of Microsoft PowerToys), toggle "keep awake," and optionally keep the screen on or let it turn off. It's the closest thing to `caffeinate`. (The older standalone *Caffeine* app also works.)
 
 ---
 

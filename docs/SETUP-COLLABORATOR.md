@@ -4,8 +4,8 @@ You cloned or pulled a repo that ships these hooks. Most of it activates automat
 
 ## What works automatically
 
-- **Skills** (`.claude/skills/*`) — Claude Code auto-discovers project skills from `.claude/skills/`. They are already in the right place; nothing to do.
-- **Hook wiring** (`.claude/settings.json`) — Claude Code auto-reads this file, so the SessionStart / PreToolUse / SessionEnd hooks activate on their own.
+- **Skills** (`.claude/skills/*`), Claude Code auto-discovers project skills from `.claude/skills/`. They are already in the right place; nothing to do.
+- **Hook wiring** (`.claude/settings.json`), Claude Code auto-reads this file, so the SessionStart / PreToolUse / SessionEnd hooks activate on their own.
 
 ## Fastest path: `./bootstrap.sh`
 
@@ -36,6 +36,6 @@ It sets the git hooks path, restores exec bits, and sanity-checks Node + setting
 Read the "Concurrent agents on `main`" section in the project's `CLAUDE.md`. The short version:
 
 - Stage explicit paths, never `git add -A` / `commit -am` (the guard enforces this).
-- Never run tree-wide `git reset --hard` / `clean -f` / `stash` — they wipe other agents' uncommitted work.
+- Never run tree-wide `git reset --hard` / `clean -f` / `stash`, they wipe other agents' uncommitted work.
 - Schema changes go through migration files applied with your migration tool, never ad-hoc `psql` DDL.
 - Pulling/rebasing the shared `main` is done on a clean tree, by the human, when agents are idle. Before a schema session, check `supabase migration list` (or your equivalent) to see what is actually applied vs your local files.

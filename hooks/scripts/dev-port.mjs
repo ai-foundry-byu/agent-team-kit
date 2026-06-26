@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * SessionStart — assign this session its own dev-server port.
+ * SessionStart, assign this session its own dev-server port.
  *
  * Many agents share one repo on `main`; each needs its own dev server on a
  * distinct port, and one port is reserved for the human's own server. This
@@ -68,7 +68,7 @@ async function main() {
       mkdirSync(marker);
       claimable = true; // fresh claim
     } catch {
-      // already claimed — reclaim only if stale or unreadable
+      // already claimed, reclaim only if stale or unreadable
       try {
         const owner = JSON.parse(readFileSync(join(marker, "owner"), "utf8"));
         if (nowSec() - Number(owner.ts || 0) > STALE_SECONDS) claimable = true;
