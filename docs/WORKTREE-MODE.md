@@ -61,9 +61,9 @@ Every launcher auto-sets a session **name** (shown in `/resume` and the terminal
 
 ### Name every session
 
-With several agents going, names are how you stay sane. The launchers set one automatically (`--name`), and it shows in two places: the **`/resume` picker** (so you can find "that grading conversation" later) and the **terminal title** (so you can tell a dozen windows apart at a glance). Names follow the branch convention — lowercase-with-dashes, the name you pass: `wt grading-fix` → session `grading-fix`; `cockpit` in a repo named `app` → `app-cockpit`; `sesh rubric-copy` → `rubric-copy`.
+With several agents going, names are how you stay sane. The launchers set one automatically (`--name`), and it shows in two places: the **`/resume` picker** (so you can find "that grading conversation" later) and the **terminal title** (so you can tell a dozen windows apart at a glance). Names follow the branch convention — lowercase-with-dashes, the name you pass: `wt grading-fix` → session `grading-fix`; `cockpit` in a repo named `app` → `app-cockpit`; `cs rubric-copy` → `rubric-copy`.
 
-This matters in **both** modes — even on stay-on-main, name every agent with `sesh <name>`. An unnamed session is a generic path in `/resume` and an indistinguishable terminal tab; a named one is findable and glanceable. Make naming a habit, not an afterthought.
+This matters in **both** modes — even on stay-on-main, name every agent with `cs <name>`. An unnamed session is a generic path in `/resume` and an indistinguishable terminal tab; a named one is findable and glanceable. Make naming a habit, not an afterthought.
 
 ### The integration loop
 

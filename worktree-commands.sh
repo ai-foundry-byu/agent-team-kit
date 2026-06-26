@@ -14,7 +14,7 @@
 #
 # Worktree mode: keep ONE pinned terminal on `cockpit` (dashboard on main);
 # every other terminal is `wt <name>` (a worker in its own worktree).
-# Stay-on-main mode: use `sesh <name>` for each named agent in the shared tree.
+# Stay-on-main mode: use `cs <name>` for each named agent in the shared tree.
 
 # wt <name> — WORKER: a fresh git worktree on branch <name> + a session named the
 # same, permissions skipped. Your per-task terminal (worktree mode).
@@ -34,12 +34,14 @@ cockpit() {
   claude --name "${repo:+$repo-}cockpit" --dangerously-skip-permissions "$@"
 }
 
-# sesh <name> — a named Claude session in the CURRENT directory (no worktree),
-# permissions skipped. Use this for stay-on-main multi-agent work so /resume and
-# your terminal titles show a real name instead of a path.
-#   sesh rubric-copy   # session "rubric-copy"
-sesh() {
-  if [ -z "${1:-}" ]; then echo "usage: sesh <name> [claude args...]"; return 1; fi
+# cs <name> — "claude session": a named Claude session in the CURRENT directory
+# (no worktree), permissions skipped. The stay-on-main launcher — every terminal
+# you open is `cs <name>`, so /resume and your terminal titles show a real name
+# instead of a path. Two letters by design; rename to a single `c` if that's
+# free in your shell.
+#   cs rubric-copy   # session "rubric-copy"
+cs() {
+  if [ -z "${1:-}" ]; then echo "usage: cs <name> [claude args...]"; return 1; fi
   local name="$1"; shift
   claude --name "$name" --dangerously-skip-permissions "$@"
 }
