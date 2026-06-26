@@ -87,6 +87,7 @@ agent-team-kit/
     ├── SETUP-COLLABORATOR.md     # a teammate joining a repo that already has the kit
     ├── WORKTREE-MODE.md          # the worktree way: full comparison + workflow + commands
     ├── TENDING-AGENTS.md         # verbose, remote control, keep-awake (Mac + Windows)
+    ├── DRIVING-THE-APP.md        # screenshots, recorded walkthroughs, driving the app as a user
     ├── HOOKS.md                  # per-hook reference (every hook + the git gates)
     ├── SKILLS.md                 # per-skill reference + how to write your own
     ├── WRITING-CLAUDE-MD.md      # how to write your project's CLAUDE.md (the shared brain)
