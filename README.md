@@ -19,6 +19,8 @@ The default instinct for "many agents" is git worktrees (a branch per agent). Fo
 
 Agents are separate processes that cannot talk to each other, so coordination routes through the **filesystem** (lock files under `.git/.wg-agent/`) and **git** (tracked migrations and shared settings). The hooks are the teeth; the working agreements below are the discipline. You need both.
 
+**Two ways to run it.** Stay-on-main (above) is the default. The kit also runs in **worktree mode** — each worker in its own git worktree, a cockpit session on `main` integrating — for when you want to fire several agents and walk away. Almost everything is shared between the modes; the one shared-working-tree git guard auto-relaxes inside a worktree. The commands (`wt` / `cockpit` / `wtmerge`) and the full feature-by-feature comparison are in [`docs/WORKTREE-MODE.md`](./docs/WORKTREE-MODE.md).
+
 ---
 
 ## What the kit gives you
@@ -38,11 +40,13 @@ Agents are separate processes that cannot talk to each other, so coordination ro
 | `skills/` | Four real skills as worked examples (push, regression-check, fix-bug, userflow-map) |
 | `install.sh` | Wires the hooks, skills, and bootstrap into a target project |
 | `bootstrap.sh` | One-command local setup a collaborator runs after cloning |
+| `worktree-commands.sh` | `wt` / `cockpit` / `wtls` / `wtmerge` — one-command worktree-mode workflow |
 | `docs/HOOKS.md`, `docs/SKILLS.md` | Detailed per-artifact reference (every hook, every skill) |
 | `docs/WRITING-CLAUDE-MD.md`, `docs/CONVENTIONS.md` | How to write your `CLAUDE.md` + transferable repo conventions |
 | `docs/FEEDBACK-LOOP-SPEC.md` | Stack-agnostic build spec for the in-app feedback + bug-fix loop |
 | `docs/SIDEBAR-SPEC.md` | Stack-agnostic build spec for the collapsible left nav rail (+ version chip / release notes) |
 | `docs/ADOPT.md` | The three adoption paths (solo brownfield, new pair, solo-adding-a-second) + prerequisites |
+| `docs/WORKTREE-MODE.md` | The second way to run it: worktrees + cockpit, the mode comparison, and commands |
 | `docs/` | Project setup, collaborator setup, design notes |
 
 ---

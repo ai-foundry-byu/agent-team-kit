@@ -48,6 +48,26 @@ export function coordDir(cwd) {
 
 export const nowSec = () => Math.floor(Date.now() / 1000);
 
+// True when cwd is inside a LINKED git worktree (not the main checkout): a
+// linked worktree's per-tree git dir differs from the shared common dir. Used
+// to auto-relax the shared-working-tree git guards in worktree mode, where each
+// agent has its own isolated tree and blanket/destructive git is safe again.
+export function isLinkedWorktree(cwd) {
+  const base = cwd || process.cwd();
+  try {
+    const out = execFileSync(
+      "git",
+      ["rev-parse", "--git-dir", "--git-common-dir"],
+      { cwd: base, encoding: "utf8" },
+    )
+      .trim()
+      .split("\n");
+    return out.length >= 2 && out[0] !== out[1];
+  } catch {
+    return false;
+  }
+}
+
 // Drop quoted substrings so a commit message like `-m "ran git add ."` or
 // `"pnpm add foo"` can't trip the command guards below.
 export function unquote(cmd) {

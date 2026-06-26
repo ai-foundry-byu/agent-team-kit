@@ -13,34 +13,49 @@
  */
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { payload, coordDir, nowSec, unquote } from "./agent-coord.mjs";
+import {
+  payload,
+  coordDir,
+  nowSec,
+  unquote,
+  isLinkedWorktree,
+} from "./agent-coord.mjs";
 
 const LEASE_SECONDS = 600; // a held schema lock becomes stealable after 10 min idle
 
 // --- A. git-safety patterns (block on match). Flags must sit right after the
-// subcommand, so quoted/parenthetical mentions don't false-trip. ---
+// subcommand, so quoted/parenthetical mentions don't false-trip.
+// `sharedTreeOnly` blocks exist solely to protect a SHARED working tree; they
+// auto-relax inside a linked worktree (worktree mode), where each agent's tree
+// is its own. Force-push has no such flag — it's dangerous from anywhere. ---
 const GIT_BLOCKS = [
   {
+    sharedTreeOnly: true,
     re: /\bgit\s+add\s+(-A\b|--all\b|\.(?:\s|$))/,
     msg: "Blanket `git add` stages the WHOLE working tree — on shared `main` that sweeps in other agents' in-flight changes. Stage explicit paths: `git add <file> <file>`.",
   },
   {
+    sharedTreeOnly: true,
     re: /\bgit\s+commit\s+-[a-zA-Z]*a[a-zA-Z]*\b/,
     msg: "`git commit -a/-am` stages every modified tracked file, including other agents' work. Stage your explicit paths first, then `git commit -m`.",
   },
   {
+    sharedTreeOnly: true,
     re: /\bgit\s+reset\s+--hard\b/,
     msg: "`git reset --hard` discards the ENTIRE working tree — it would destroy other agents' uncommitted work. Revert only your own paths (`git checkout -- <file>`), or ask the human.",
   },
   {
+    sharedTreeOnly: true,
     re: /\bgit\s+clean\s+-[a-zA-Z]*f/,
     msg: "`git clean -f` deletes untracked files across the whole tree, including other agents' new files. Don't run it on shared `main`.",
   },
   {
+    sharedTreeOnly: true,
     re: /\bgit\s+stash\b(?!\s+(list|show|pop|apply|drop))/,
     msg: "`git stash` pockets EVERY agent's uncommitted changes, not just yours. Don't stash on shared `main`.",
   },
   {
+    sharedTreeOnly: true,
     re: /\bgit\s+checkout\s+(?:--\s+)?\.(?:\s|$)/,
     msg: "`git checkout -- .` reverts the whole tree, destroying other agents' uncommitted work. Revert only your own explicit paths.",
   },
@@ -117,7 +132,12 @@ function main() {
     process.exit(2);
   }
 
+  // In a linked worktree each agent's tree is its own, so the shared-tree git
+  // blocks (blanket-stage, reset --hard, clean, stash, checkout -- .) are safe
+  // and auto-relax. Force-push (no sharedTreeOnly flag) stays blocked anywhere.
+  const linked = isLinkedWorktree(p.cwd);
   for (const g of GIT_BLOCKS) {
+    if (linked && g.sharedTreeOnly) continue;
     if (g.re.test(cmd)) {
       process.stderr.write(g.msg + "\n");
       process.exit(2);

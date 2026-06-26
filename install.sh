@@ -32,6 +32,7 @@ done
 cp -R "$KIT"/skills/* "$TARGET/.claude/skills/" 2>/dev/null || true
 cp "$KIT/bootstrap.sh" "$TARGET/bootstrap.sh"
 chmod +x "$TARGET/bootstrap.sh"
+cp "$KIT/worktree-commands.sh" "$TARGET/worktree-commands.sh"
 mkdir -p "$TARGET/docs"
 cp "$KIT/docs/FEEDBACK-LOOP-SPEC.md" "$TARGET/docs/FEEDBACK-LOOP-SPEC.md"
 cp "$KIT/docs/SIDEBAR-SPEC.md" "$TARGET/docs/SIDEBAR-SPEC.md"
@@ -99,6 +100,8 @@ Installed into $TARGET. Next:
   3. Commit the new files.
   4. Start a FRESH Claude Code session so the hooks + skills load.
   5. Adding a teammate later? They clone and run ./bootstrap.sh.
+  6. Prefer worktrees to stay-on-main? Source worktree-commands.sh for the
+     wt / cockpit / wtmerge commands — see the kit's docs/WORKTREE-MODE.md.
 
 Pick the full path for your case in docs/ADOPT.md.
 EOF
