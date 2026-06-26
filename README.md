@@ -1,54 +1,102 @@
 # Agent Team Kit
 
-**How a two-person, AI-native team works on one shared `main` without stepping on each other.** Also: how a solo developer running many Claude Code agents at once stays out of their own way.
+**How a two-person AI-native team — or a solo developer running many Claude Code agents at once — works in parallel without stepping on each other.**
 
-An "AI-native team" here means a small team where most code is written by Claude Code agents, often several at once per person, committing directly to `main`. That style is fast, but it collides on things that have nothing to do with the code: dev-server ports, the shared database, and the git working tree. This kit is the setup and the working agreements that make it smooth.
+An "AI-native team" here means a small team where most code is written by Claude Code agents, often several at once per person. That style is fast, but those agents collide on things that have nothing to do with the code: dev-server ports, the shared database, and the git working tree. This kit is the tooling, **the two ways to run it**, and the working agreements that make parallel agents smooth.
 
-**Read this as two documents in one: an education and a setup guide.** The first half teaches the way of working (why agents collide, the model that resolves it, and the human agreements that go with it); the setup section and [`docs/`](./docs) get it running on a real project. If you only want to install it, jump to [Setup](#setup); if you are deciding whether to work this way, read top to bottom. The deep "why" behind every artifact is in [`docs/DESIGN-NOTES.md`](./docs/DESIGN-NOTES.md), and a readable narrative of the session it was designed in is in [`docs/ORIGIN-CONVERSATION.md`](./docs/ORIGIN-CONVERSATION.md).
-
----
-
-## The model: stay on `main`, isolate the runtime, guard the edges
-
-The default instinct for "many agents" is git worktrees (a branch per agent). For a small AI-native team that is usually the wrong default: worktrees isolate *files*, but the painful collisions are *ports* and the *database*, which live outside the file boundary, and worktrees add a recurring merge tax. So this kit takes the other path:
-
-1. **Everyone commits to `main`.** Partition work by area so agents rarely touch the same files.
-2. **Isolate the runtime.** Each agent session gets its own dev-server port automatically.
-3. **Guard the dangerous edges with hooks.** Blanket/destructive git, concurrent migrations, and ad-hoc schema DDL are blocked or serialized.
-4. **One session is the cockpit.** Keep a Claude session in the main checkout for the human-gated acts: pulling a teammate's commits on a clean tree, merging, migrations, and the single `git push`.
-
-Agents are separate processes that cannot talk to each other, so coordination routes through the **filesystem** (lock files under `.git/.wg-agent/`) and **git** (tracked migrations and shared settings). The hooks are the teeth; the working agreements below are the discipline. You need both.
-
-**Two ways to run it.** Stay-on-main (above) is the default. The kit also runs in **worktree mode** — each worker in its own git worktree, a cockpit session on `main` integrating — for when you want to fire several agents and walk away. Almost everything is shared between the modes; the one shared-working-tree git guard auto-relaxes inside a worktree. The commands (`wt` / `cockpit` / `wtmerge`) and the full feature-by-feature comparison are in [`docs/WORKTREE-MODE.md`](./docs/WORKTREE-MODE.md).
+**Read this as three documents in one: an overview, a decision guide, and a setup guide.** It teaches the way of working (why agents collide, the **two modes** that resolve it and how to choose between them, and the human agreements that go with them), helps you pick a mode, then gets it running. If you only want to install it, jump to [Setup](#setup); if you're deciding how to work, read top to bottom. The deep "why" behind every artifact is in [`docs/DESIGN-NOTES.md`](./docs/DESIGN-NOTES.md), and a readable narrative of the session it was designed in is in [`docs/ORIGIN-CONVERSATION.md`](./docs/ORIGIN-CONVERSATION.md).
 
 ---
 
-## What the kit gives you
+## Two ways to run it — pick one
 
-| Path | What it does |
-|---|---|
-| `hooks/scripts/dev-port.mjs` | Assigns each session its own dev-server port; reserves one for the human |
-| `hooks/scripts/bash-guard.mjs` | Blocks tree-wide/destructive git, serializes schema/DB/dep commands behind a lock, blocks ad-hoc psql DDL |
-| `hooks/scripts/bash-guard.sh` | Zero-spawn shell pre-filter so the common command path stays fast |
-| `hooks/scripts/session-release.mjs` | Frees this session's lock + port on exit |
-| `hooks/scripts/agent-coord.mjs` | Shared helpers |
-| `hooks/scripts/{file-size-budget,import-boundaries,arch-check,file-size-nudge}.mjs` | Architecture guards: file-size ratchet + import-boundary guard, as a CLI gate (`arch-check`) and an in-session nudge |
-| `hooks/githooks/post-merge` | Flags DB migrations that arrive when you pull |
-| `hooks/githooks/{pre-commit,pre-push}` | Commit gate (arch guards on staged files) + push gate (typecheck + tests / `@critical` E2E) |
-| `hooks/settings.json` | The `.claude/settings.json` wiring that registers the hooks |
-| `snippets/` | `.gitignore` lines and the CLAUDE.md section to paste in |
-| `skills/` | Five real skills as worked examples (push, regression-check, fix-bug, userflow-map, merge-worktree) |
-| `install.sh` | Wires the hooks, skills, and bootstrap into a target project |
-| `bootstrap.sh` | One-command local setup a collaborator runs after cloning |
-| `worktree-commands.sh` | `wt` / `cockpit` / `cs` / `wtls` — named, permission-skipped session launchers |
-| `docs/HOOKS.md`, `docs/SKILLS.md` | Detailed per-artifact reference (every hook, every skill) |
-| `docs/WRITING-CLAUDE-MD.md`, `docs/CONVENTIONS.md` | How to write your `CLAUDE.md` + transferable repo conventions |
-| `docs/FEEDBACK-LOOP-SPEC.md` | Stack-agnostic build spec for the in-app feedback + bug-fix loop |
-| `docs/SIDEBAR-SPEC.md` | Stack-agnostic build spec for the collapsible left nav rail (+ version chip / release notes) |
-| `docs/ADOPT.md` | The three adoption paths (solo brownfield, new pair, solo-adding-a-second) + prerequisites |
-| `docs/WORKTREE-MODE.md` | The second way to run it: worktrees + cockpit, the mode comparison, and commands |
-| `docs/TENDING-AGENTS.md` | Verbose, remote control, and keep-awake (Mac + Windows) for tending agents while away |
-| `docs/` | Project setup, collaborator setup, design notes |
+The kit supports two ways of working, and **almost all of its tooling is shared between them** — the same port assignment, schema lock, architecture guards, skills, specs, discipline, and launchers. They differ in exactly one thing: **how agents are kept from colliding on files.**
+
+- **Stay on main** — every agent commits to one `main`; you keep them apart by pointing each at a different area of the codebase. Lightest, no integration step. You're at the keyboard, supervising.
+- **Worktree mode** — each agent works in its own git worktree on its own branch, and a "cockpit" session on `main` merges the results in. Files can't collide, so you can fire several agents and walk away — at the cost of a merge step per worker.
+
+The hard part that *neither* mode escapes is the runtime: **dev-server ports and the shared database collide regardless of branching**, so the kit's hooks handle those in both. (That's also why worktrees alone aren't a complete answer — they isolate files, not ports or the DB.)
+
+### Similar and different
+
+| | Stay on main | Worktree mode |
+|---|---|---|
+| **How agents are isolated** | by you — partition work by area | by git — each in its own worktree |
+| **File-edit collisions** | possible (rare if you partition well) | structurally impossible |
+| **Integration step** | none — commits interleave on `main` | a merge per worker (the cockpit does it) |
+| **Per-agent setup** | none | each worktree needs its own deps + `.env` |
+| **Best when** | you're supervising at the keyboard | you want to fire agents and walk away |
+| **Overhead** | lightest | a merge tax + per-worktree setup |
+| **Ports, schema lock, guards, skills, specs, discipline, launchers** | ✓ | ✓ (identical) |
+
+The single behavioral difference is the shared-tree git guard (blocking blanket-stage / `reset --hard` / `stash`): needed on `main`, and it **auto-relaxes** inside a worktree, where each tree is private. Everything else is byte-for-byte the same. The full feature-by-feature breakdown and the worktree workflow (the `wt` / `cockpit` launchers, the `merge-worktree` skill) live in [`docs/WORKTREE-MODE.md`](./docs/WORKTREE-MODE.md).
+
+### Which should you use?
+
+- **Default to stay on main** if you're usually at the keyboard, you know the codebase well enough to point agents at non-overlapping areas, and you want the lightest workflow with no merge step. Right for most solo devs and small supervised teams.
+- **Reach for worktree mode** when you want agents running **unattended on potentially-overlapping work** — fire several, walk away, tend them from your phone, integrate when they're done. The merge tax buys guaranteed isolation.
+- **You don't have to choose once.** Because the modes share a setup, you can stay on `main` by default and spin up a worktree for the occasional risky fan-out. The launchers make it a per-terminal call: `cs <name>` starts a stay-on-main session, `wt <name>` starts a worktree one.
+
+Agents are separate processes that cannot talk to each other, so in **both** modes coordination routes through the **filesystem** (lock files under `.git/.wg-agent/`) and **git** (tracked migrations and shared settings). The hooks are the teeth; the working agreements below are the discipline. You need both.
+
+---
+
+## What's in here (repository map)
+
+```
+agent-team-kit/
+├── README.md                     # this file: overview, the mode decision, and setup
+├── install.sh                    # wire the kit into a project (idempotent, brownfield-safe)
+├── bootstrap.sh                  # a collaborator's one-time local setup (run after cloning)
+├── worktree-commands.sh          # shell launchers: cs / wt / cockpit / wtls (named, remote-control)
+│
+├── hooks/                        # the automation
+│   ├── settings.json             # .claude/settings.json wiring that registers the Claude hooks
+│   ├── scripts/                  # Claude Code hooks (coordination + code-quality)
+│   │   ├── dev-port.mjs          # SessionStart: give this session its own dev-server port
+│   │   ├── bash-guard.mjs        # PreToolUse: git-safety + schema lock + ad-hoc psql DDL block
+│   │   ├── bash-guard.sh         # zero-spawn shell pre-filter in front of the guard
+│   │   ├── session-release.mjs   # SessionEnd: free this session's lock + port
+│   │   ├── agent-coord.mjs       # shared helpers (coordination dir, worktree detection)
+│   │   ├── file-size-budget.mjs  # file-size ratchet: config + helpers
+│   │   ├── import-boundaries.mjs # import-boundary guard: config + helper
+│   │   ├── file-size-nudge.mjs   # PostToolUse: in-session preview of the arch guards
+│   │   └── arch-check.mjs        # the CLI gate behind the nudge (pre-commit / CI)
+│   └── githooks/                 # git hooks (run via core.hooksPath)
+│       ├── post-merge            # flag DB migrations that arrived when you pull
+│       ├── pre-commit            # arch guards on staged files (+ a slot for your formatter)
+│       └── pre-push              # typecheck + tests before a push (@critical E2E)
+│
+├── skills/                       # Claude Code skills — real worked examples to adapt
+│   ├── push/                     # cut a release + push, guarded, with customer release notes
+│   ├── regression-check/         # impact analysis + behavior tests on shared-code changes
+│   ├── fix-bug/                  # load an in-app bug report from the DB and fix it
+│   ├── userflow-map/             # maintain a data-driven UI state-machine map
+│   └── merge-worktree/           # cockpit-side: integrate a worker branch into main
+│
+├── snippets/                     # fragments you paste into a project
+│   ├── gitignore-additions.txt   # .gitignore lines to share settings + skills
+│   ├── CLAUDE-md-section.md       # "concurrent agents on main" rules (stay-on-main)
+│   ├── CLAUDE-md-worktree.md      # the worktree-mode variant of that section
+│   └── CLAUDE-md-working-discipline.md   # the definition-of-done section
+│
+└── docs/                         # the reading
+    ├── ADOPT.md                  # START HERE to install: the 3 adoption paths + prerequisites
+    ├── SETUP-PROJECT.md          # owner install reference (customize knobs, what's tracked)
+    ├── SETUP-COLLABORATOR.md     # a teammate joining a repo that already has the kit
+    ├── WORKTREE-MODE.md          # the worktree way: full comparison + workflow + commands
+    ├── TENDING-AGENTS.md         # verbose, remote control, keep-awake (Mac + Windows)
+    ├── HOOKS.md                  # per-hook reference (every hook + the git gates)
+    ├── SKILLS.md                 # per-skill reference + how to write your own
+    ├── WRITING-CLAUDE-MD.md      # how to write your project's CLAUDE.md (the shared brain)
+    ├── CONVENTIONS.md            # transferable repo conventions
+    ├── FEEDBACK-LOOP-SPEC.md     # stack-agnostic build spec: the in-app feedback + bug-fix loop
+    ├── SIDEBAR-SPEC.md           # stack-agnostic build spec: the collapsible left nav rail
+    ├── DESIGN-NOTES.md           # the reasoning behind every choice
+    └── ORIGIN-CONVERSATION.md    # a redacted narrative of how the kit came to be
+```
+
+The mental model: **`hooks/`** is the automation (Claude hooks + git hooks), **`skills/`** and **`snippets/`** get copied into your project, **`docs/`** is the reading, and the three scripts at the root (`install.sh`, `bootstrap.sh`, `worktree-commands.sh`) are what you actually run.
 
 ---
 
