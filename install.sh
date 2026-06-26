@@ -36,6 +36,7 @@ cp "$KIT/worktree-commands.sh" "$TARGET/worktree-commands.sh"
 mkdir -p "$TARGET/docs"
 cp "$KIT/docs/FEEDBACK-LOOP-SPEC.md" "$TARGET/docs/FEEDBACK-LOOP-SPEC.md"
 cp "$KIT/docs/SIDEBAR-SPEC.md" "$TARGET/docs/SIDEBAR-SPEC.md"
+cp "$KIT/docs/DRIVING-THE-APP.md" "$TARGET/docs/DRIVING-THE-APP.md"
 echo "[ok] hook scripts, skills, bootstrap.sh, and the build specs in place"
 
 # 2. .claude/settings.json (the Claude Code hook wiring).

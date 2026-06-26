@@ -86,6 +86,15 @@ Call it `$ID`.
      skill or `pnpm dev`) and, when feasible, open the **exact entity from the
      report** (the `route`/ids in the row) and drive the same action. Inspect the
      real payload/DOM, not your assumption of it.
+   - **Record the repro when it helps (optional, only when it makes sense).** If
+     the bug is a sequence of UI steps you can drive, record a clean GIF of the
+     reproduction: own dev server on a fresh port (never 5173), dry-run the flow
+     once WITHOUT recording to learn the element refs, then record a clean take
+     (hover, screenshot, click, screenshot) and verify by reading URLs in tool
+     results, not pixels. The GIF both proves the bug and is a watchable artifact
+     to attach to the close-the-loop note. Full recipe and when-to-use:
+     `docs/DRIVING-THE-APP.md`. Skip it when it does not apply (a thrown-error or
+     backend-only repro) or is not possible (cannot reproduce, no browser).
 
    Classify the result, and only ONE outcome leads to a code change:
 

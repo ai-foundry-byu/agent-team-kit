@@ -7,6 +7,14 @@ Three related capabilities for seeing and showing what the running app actually 
 - **Own dev server on your assigned port.** Start your own (`pnpm dev --port <N> --strictPort`, backgrounded), read the real bound port from the log, and never trust `5173`: it is usually another session's, and concurrent HMR causes phantom failures. Kill only your own PID on cleanup. (This is the kit's `dev-port` hook in action.)
 - **Verify by reading state, not pixels.** Confirm navigation and behavior by reading the URL / DOM / network in each tool result, not by eyeballing screenshots. The URL trail is what actually proves a flow worked or a bug exists.
 
+## When to reach for which
+
+- **A still screenshot** when the thing is about one state: a layout, a rendered design, "did this land." Cheapest and fastest.
+- **A recording (GIF or video)** when the thing is about a sequence of steps: reproducing a bug (a "repro": the click path that triggers it), demoing a flow, or showing a before/after interaction. For a bug specifically, this lives in the `fix-bug` skill's reproduce phase; record it when the bug is a UI sequence you can drive and a watchable artifact would help.
+- **Puppet strings** when you want Claude to exercise a flow end to end and report what happened (the URLs it hit, the resulting state) without you clicking, for example "run the grading flow and show me after my change."
+
+Quick rule: a still is one moment, a recording is a sequence, puppet strings is "go do it and tell me what happened." None of these is always possible; attempt the one that fits the context, and fall back to describing the result when the app cannot be driven.
+
 ## 1. High-fidelity screenshots
 
 Drive the running app in a real browser and capture pixel-accurate screenshots of any screen or state. Useful for design review, before/after comparisons, video frames, docs, and confirming a change landed.

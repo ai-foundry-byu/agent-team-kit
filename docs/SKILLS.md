@@ -1,6 +1,6 @@
 # Skills reference
 
-The kit bundles four real skills (under `skills/`) as worked examples. They come from the real project they were built in, so the *specifics* are project-bound (table names, file paths, the deploy host), but the *patterns* generalize, and that is why they are here: to show the kinds of skill an AI-native team should write for itself. Treat the project-specific paths inside them as placeholders to adapt.
+The kit bundles five skills (under `skills/`) as worked examples. Four come from the real project they were built in, so their *specifics* are project-bound (table names, file paths, the deploy host) while the *patterns* generalize; `merge-worktree` is kit-native (worktree-mode integration). They are here to show the kinds of skill an AI-native team should write for itself. Treat the project-specific paths inside them as placeholders to adapt.
 
 ## What a skill is, and why it matters for a team
 
@@ -53,6 +53,16 @@ Below, each example, what it does, why the pattern is valuable, and what is proj
 **Why the pattern matters.** A two-person team needs a *shared mental model* of the product, and mental models drift when they live only in two separate heads. This skill keeps that model in a version-controlled, regenerable artifact both people's agents read and update. The general lesson: **skills can curate the shared knowledge artifacts a team relies on** (an architecture map, a glossary, a flow doc), keeping them current as a byproduct of work instead of a doc that rots.
 
 **Project-specific to swap.** Essentially all of it (the `docs/userflow/` layout and schema); keep the *idea* of a tracked, generated, single-source-of-truth artifact with a feedback loop.
+
+---
+
+## `merge-worktree`, encode a guarded multi-step operation
+
+**What it does.** From the cockpit (on `main`, clean tree), it integrates a finished worktree worker's branch: verify you are on main with a clean tree, merge, surface conflicts instead of guessing, prune the worktree, and stop short of pushing.
+
+**Why the pattern matters.** Some operations have a strict safe sequence and a tempting unsafe shortcut. A skill encodes the guards (clean-tree check, never blind-resolve a conflict, never push) so the operation is reliable every time. It also illustrates the launchers-vs-operations rule: starting a session is a shell command, but an operation you run mid-session with judgment is a skill.
+
+**Kit-native** (not from the origin project); it pairs with worktree mode, see [`WORKTREE-MODE.md`](./WORKTREE-MODE.md).
 
 ---
 
