@@ -30,13 +30,16 @@ Agents are separate processes that cannot talk to each other, so coordination ro
 | `hooks/scripts/bash-guard.sh` | Zero-spawn shell pre-filter so the common command path stays fast |
 | `hooks/scripts/session-release.mjs` | Frees this session's lock + port on exit |
 | `hooks/scripts/agent-coord.mjs` | Shared helpers |
+| `hooks/scripts/{file-size-budget,import-boundaries,arch-check,file-size-nudge}.mjs` | Architecture guards: file-size ratchet + import-boundary guard, as a CLI gate (`arch-check`) and an in-session nudge |
 | `hooks/githooks/post-merge` | Flags DB migrations that arrive when you pull |
+| `hooks/githooks/{pre-commit,pre-push}` | Commit gate (arch guards on staged files) + push gate (typecheck + tests / `@critical` E2E) |
 | `hooks/settings.json` | The `.claude/settings.json` wiring that registers the hooks |
 | `snippets/` | `.gitignore` lines and the CLAUDE.md section to paste in |
 | `skills/` | Four real skills as worked examples (push, regression-check, fix-bug, userflow-map) |
 | `install.sh` | Wires the hooks, skills, and bootstrap into a target project |
 | `bootstrap.sh` | One-command local setup a collaborator runs after cloning |
 | `docs/HOOKS.md`, `docs/SKILLS.md` | Detailed per-artifact reference (every hook, every skill) |
+| `docs/WRITING-CLAUDE-MD.md`, `docs/CONVENTIONS.md` | How to write your `CLAUDE.md` + transferable repo conventions |
 | `docs/FEEDBACK-LOOP-SPEC.md` | Stack-agnostic build spec for the in-app feedback + bug-fix loop |
 | `docs/SIDEBAR-SPEC.md` | Stack-agnostic build spec for the collapsible left nav rail (+ version chip / release notes) |
 | `docs/ADOPT.md` | The three adoption paths (solo brownfield, new pair, solo-adding-a-second) + prerequisites |
@@ -83,6 +86,16 @@ The hooks stop the mechanical collisions. This is the human model that wraps the
 The loop, in one line: claim a lane, pull-rebase, work with your agents, integrate through the cockpit, review, and keep schema and deploys coordinated by hand.
 
 ---
+
+## The discipline layer: keeping agent-written code from rotting
+
+Coordination keeps agents from colliding; this layer keeps what they *write* from sprawling. When agents produce a lot of code fast, the failure mode isn't collisions — it's 2,000-line files and quietly-crossed boundaries. Three executable guards push back, all configurable for your project:
+
+- **The file-size ratchet** (`file-size-budget.mjs`). New files cap at a budget (800 lines by default); today's giants are *frozen* (may only shrink); a genuinely-single-concern file is *exempt* with a written reason. A red one is an alarm to check cohesion, never a number to game.
+- **The import-boundary guard** (`import-boundaries.mjs`). A dangerous capability (the default example: a privilege-escalating DB client that bypasses row-level security) is allowlisted — any *new* importer fails the gate until it's a deliberate, commented choice. The list may only shrink.
+- **Both, two ways:** an in-session **PostToolUse nudge** (`file-size-nudge.mjs`) that flags a violation the moment an edit trips it, and an **`arch-check` CLI** that the **pre-commit** gate runs on staged files so nothing crosses into history.
+
+Alongside them, the **pre-push gate** runs your typecheck + tests (tag must-never-break E2E `@critical`) before a push, and a **definition-of-done** section for your `CLAUDE.md` (`snippets/CLAUDE-md-working-discipline.md`, appended by the installer) spells out what "ready" means — because agents declare victory early. Plus a guide to [writing your `CLAUDE.md`](./docs/WRITING-CLAUDE-MD.md) and transferable [conventions](./docs/CONVENTIONS.md). Together with the coordination hooks, that's the full picture: coordinate, build well, keep it from rotting, and know when it's done.
 
 ## Included: the AI-native feedback loop
 

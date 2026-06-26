@@ -19,6 +19,16 @@ mkdir -p "$TARGET/scripts/hooks" "$TARGET/.githooks" "$TARGET/.claude/skills"
 cp "$KIT"/hooks/scripts/* "$TARGET/scripts/hooks/"
 cp "$KIT/hooks/githooks/post-merge" "$TARGET/.githooks/post-merge"
 chmod +x "$TARGET/.githooks/post-merge"
+# Git gates (pre-commit arch guard + pre-push test gate) — only if ABSENT, so a
+# project's existing hooks are never clobbered. If present, the user merges them.
+for gh in pre-commit pre-push; do
+  if [ -f "$TARGET/.githooks/$gh" ]; then
+    echo "[!] .githooks/$gh exists — merge the kit's version ($KIT/hooks/githooks/$gh) by hand"
+  else
+    cp "$KIT/hooks/githooks/$gh" "$TARGET/.githooks/$gh"
+    chmod +x "$TARGET/.githooks/$gh"
+  fi
+done
 cp -R "$KIT"/skills/* "$TARGET/.claude/skills/" 2>/dev/null || true
 cp "$KIT/bootstrap.sh" "$TARGET/bootstrap.sh"
 chmod +x "$TARGET/bootstrap.sh"
@@ -59,6 +69,15 @@ else
   echo "[ok] appended the concurrent-agents section to CLAUDE.md"
 fi
 
+# 4b. CLAUDE.md — the working-discipline / definition-of-done section.
+if [ -f "$CM" ] && grep -qF 'Working discipline' "$CM"; then
+  echo "[ok] CLAUDE.md already has the working-discipline section"
+else
+  printf '\n' >> "$CM"
+  awk 'f; /-->/{f=1}' "$KIT/snippets/CLAUDE-md-working-discipline.md" >> "$CM"
+  echo "[ok] appended the working-discipline section to CLAUDE.md"
+fi
+
 # 5. Enable the project's git hooks.
 git -C "$TARGET" config core.hooksPath .githooks
 echo "[ok] core.hooksPath = .githooks"
@@ -66,10 +85,15 @@ echo "[ok] core.hooksPath = .githooks"
 cat <<EOF
 
 Installed into $TARGET. Next:
-  1. Customize for your stack (skip if Supabase + pnpm):
-       scripts/hooks/bash-guard.mjs   SCHEMA_RE / PSQL_DDL_RE
-       scripts/hooks/dev-port.mjs     port pool + RESERVED_PORT + START_HINT (your dev command)
-       .githooks/post-merge           migrations dir
+  1. Customize for your stack:
+       scripts/hooks/file-size-budget.mjs    BUDGET / FROZEN / EXEMPT / isGoverned
+       scripts/hooks/import-boundaries.mjs   RESTRICTED_RE / ALLOWLIST
+       scripts/hooks/bash-guard.mjs          SCHEMA_RE / PSQL_DDL_RE (Supabase + pnpm default)
+       scripts/hooks/dev-port.mjs            port pool + RESERVED_PORT + START_HINT
+       .githooks/pre-push                    CHECK_CMD / TEST_CMD (+ your @critical E2E)
+       .githooks/post-merge                  migrations dir
+     Then seed the guards: run `node scripts/hooks/arch-check.mjs` once and paste
+     any over-budget files into FROZEN and any restricted importers into ALLOWLIST.
   2. (optional) Build the feedback loop: hand docs/FEEDBACK-LOOP-SPEC.md to your
      coding agent: "build the feedback loop from this spec for our stack."
   3. Commit the new files.

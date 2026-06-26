@@ -16,10 +16,10 @@ Everything shares one piece of state: a coordination directory at `.git/.wg-agen
 This file is what makes the Claude Code hooks active. Each entry binds a lifecycle event (and, for tool hooks, a tool matcher) to a command. The kit registers four:
 
 ```jsonc
-SessionStart  -> dev-port.mjs        // assign a dev port
-PreToolUse/Bash -> bash-guard.sh     // guard every shell command
-PostToolUse/Edit|Write -> (your own) // e.g. a file-size nudge
-SessionEnd    -> session-release.mjs // free the lock + port
+SessionStart  -> dev-port.mjs            // assign a dev port
+PreToolUse/Bash -> bash-guard.sh         // guard every shell command
+PostToolUse/Edit|Write -> file-size-nudge.mjs  // in-session arch-guard preview
+SessionEnd    -> session-release.mjs     // free the lock + port
 ```
 
 **Why it matters:** the scripts can live in the repo, but nothing runs them until this file points at them. And because Claude Code reads `settings.json` at session start, a freshly-pulled change needs a new session to take effect. The file is tracked (see the `.gitignore` snippet) so the wiring travels; personal overrides go in the gitignored `settings.local.json`, which merges over it.
@@ -132,3 +132,29 @@ All cross-session state — port claims and the schema lock — lives here. Two 
 - **It is anchored to the common git dir,** so it is shared across the main checkout and any worktrees on the same machine.
 
 If you ever need to debug the system, this is where to look: `ports/<n>/owner` shows who holds each port, `schema.lock/owner` shows who holds the schema lock and when they last touched it.
+
+---
+
+## Architecture guards — keeping agent-written code from sprawling
+
+Four scripts form the kit's *code-quality* layer (distinct from the coordination hooks above). They run the same two judgements in two places: an in-session nudge and a commit-time gate.
+
+- **`file-size-budget.mjs`** (config + helpers). The file-size ratchet. `BUDGET` caps new files (800 lines by default); `FROZEN` grandfathers today's oversized files at their current count (shrink-only); `EXEMPT` lets a genuinely-single-concern file off with a written reason; `isGoverned` selects which files the guard covers (edit the extensions/root for your stack). The number is an *alarm to check cohesion*, not a target — the fix is "split along the seam," never "delete lines to get under it."
+- **`import-boundaries.mjs`** (config + helper). The import-boundary guard. `RESTRICTED_RE` matches a dangerous import (default: a privilege-escalating server DB client that bypasses RLS); `ALLOWLIST` grandfathers the current importers (shrink-only); any new importer fails until it's added with a call-site reason. Use it for any capability you want kept rare and intentional.
+- **`file-size-nudge.mjs`** (PostToolUse hook). Runs both guards the moment an Edit/Write trips one and surfaces it to the agent (exit 2 + stderr). Advisory — it never blocks the edit (which already happened); it's the in-loop reminder so violations get fixed before commit.
+- **`arch-check.mjs`** (CLI gate). Runs both guards over the files you pass (the pre-commit hook passes the staged files) or the whole `src/` tree (use this form in CI). Exit 1 on any violation — the *enforcement* the nudge previews.
+
+**Seeding for a brownfield repo:** run `node scripts/hooks/arch-check.mjs` once, then paste the over-budget files into `FROZEN` and any flagged importers into `ALLOWLIST`. That grandfathers your current state so only *new* sprawl is blocked, and the ratchet tightens as you pay it down.
+
+**Why it matters:** this is the failure mode coordination doesn't touch. Agents write a lot of code fast; without a ratchet, files grow to thousands of lines and dangerous imports spread silently. The guards make both a deliberate, visible choice.
+
+---
+
+## Git gates: `pre-commit` and `pre-push`
+
+Two *git* hooks (in `.githooks/`, run via `core.hooksPath`), staged so the cheap checks run before history and the heavier ones before a push.
+
+- **`pre-commit`** — fast, staged-files-only. Runs `arch-check.mjs` on the files in the commit so sprawl / boundary violations never enter history. There's a marked spot to add your formatter/linter (staged files only). Kept light so "commit often" stays cheap. Bypass: `git commit --no-verify`.
+- **`pre-push`** — the heavier gate before a push (which often triggers a paid build/deploy): your typecheck (`CHECK_CMD`) and tests (`TEST_CMD`), both set in a config block at the top of the file. Tag must-never-break E2E specs `@critical` and add them to `TEST_CMD` (e.g. `playwright test --grep @critical`). Kept fast (no full E2E/build) so it doesn't discourage pushing; run the full suite in CI post-push. Bypass: `git push --no-verify`.
+
+**Install caveat:** the installer copies these only if the project doesn't already have a `pre-commit` / `pre-push` — it won't clobber yours; if you have them, merge the kit's logic in by hand. Like `post-merge`, they need `core.hooksPath .githooks` set (the installer and `bootstrap.sh` do this).
