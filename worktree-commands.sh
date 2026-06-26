@@ -5,8 +5,10 @@
 #   echo 'source /path/to/agent-team-kit/worktree-commands.sh' >> ~/.zshrc
 # (or paste the functions in). Works in bash and zsh.
 #
-# Every launcher does two things that matter when juggling many agents:
-#   - skips permissions (--dangerously-skip-permissions), and
+# Every launcher does three things that matter when juggling many agents:
+#   - skips permissions (--dangerously-skip-permissions),
+#   - enables remote control (--remote-control), so the session shows up in the
+#     Claude app and you can tend it from your phone while away from the machine,
 #   - sets a session NAME (--name), which shows in the /resume picker AND the
 #     terminal title. Names follow the branch convention: lowercase-with-dashes,
 #     i.e. the name you pass, as-is. Naming is how you tell a dozen windows apart
@@ -22,7 +24,7 @@
 wt() {
   if [ -z "${1:-}" ]; then echo "usage: wt <name> [claude args...]"; return 1; fi
   local name="$1"; shift
-  claude --worktree "$name" --name "$name" --dangerously-skip-permissions "$@"
+  claude --worktree "$name" --name "$name" --dangerously-skip-permissions --remote-control "$@"
   # Tip: add --tmux to put each worker in its own tmux session.
 }
 
@@ -31,7 +33,7 @@ wt() {
 # push. Run from the repo root. Names itself "<repo>-cockpit".
 cockpit() {
   local repo; repo=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)" 2>/dev/null)
-  claude --name "${repo:+$repo-}cockpit" --dangerously-skip-permissions "$@"
+  claude --name "${repo:+$repo-}cockpit" --dangerously-skip-permissions --remote-control "$@"
 }
 
 # cs <name> — "claude session": a named Claude session in the CURRENT directory
@@ -43,7 +45,7 @@ cockpit() {
 cs() {
   if [ -z "${1:-}" ]; then echo "usage: cs <name> [claude args...]"; return 1; fi
   local name="$1"; shift
-  claude --name "$name" --dangerously-skip-permissions "$@"
+  claude --name "$name" --dangerously-skip-permissions --remote-control "$@"
 }
 
 # wtls — list active worktrees + branches (a read-only glance).

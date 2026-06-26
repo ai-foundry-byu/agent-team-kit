@@ -47,6 +47,7 @@ Agents are separate processes that cannot talk to each other, so coordination ro
 | `docs/SIDEBAR-SPEC.md` | Stack-agnostic build spec for the collapsible left nav rail (+ version chip / release notes) |
 | `docs/ADOPT.md` | The three adoption paths (solo brownfield, new pair, solo-adding-a-second) + prerequisites |
 | `docs/WORKTREE-MODE.md` | The second way to run it: worktrees + cockpit, the mode comparison, and commands |
+| `docs/TENDING-AGENTS.md` | Verbose, remote control, and keep-awake (Mac + Windows) for tending agents while away |
 | `docs/` | Project setup, collaborator setup, design notes |
 
 ---
