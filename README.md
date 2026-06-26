@@ -37,10 +37,10 @@ Agents are separate processes that cannot talk to each other, so coordination ro
 | `hooks/githooks/{pre-commit,pre-push}` | Commit gate (arch guards on staged files) + push gate (typecheck + tests / `@critical` E2E) |
 | `hooks/settings.json` | The `.claude/settings.json` wiring that registers the hooks |
 | `snippets/` | `.gitignore` lines and the CLAUDE.md section to paste in |
-| `skills/` | Four real skills as worked examples (push, regression-check, fix-bug, userflow-map) |
+| `skills/` | Five real skills as worked examples (push, regression-check, fix-bug, userflow-map, merge-worktree) |
 | `install.sh` | Wires the hooks, skills, and bootstrap into a target project |
 | `bootstrap.sh` | One-command local setup a collaborator runs after cloning |
-| `worktree-commands.sh` | `wt` / `cockpit` / `wtls` / `wtmerge` — one-command worktree-mode workflow |
+| `worktree-commands.sh` | `wt` / `cockpit` / `sesh` / `wtls` — named, permission-skipped session launchers |
 | `docs/HOOKS.md`, `docs/SKILLS.md` | Detailed per-artifact reference (every hook, every skill) |
 | `docs/WRITING-CLAUDE-MD.md`, `docs/CONVENTIONS.md` | How to write your `CLAUDE.md` + transferable repo conventions |
 | `docs/FEEDBACK-LOOP-SPEC.md` | Stack-agnostic build spec for the in-app feedback + bug-fix loop |
@@ -86,6 +86,7 @@ The hooks stop the mechanical collisions. This is the human model that wraps the
 - **Announce migrations, own deploys.** The schema lock is local to one machine and can't see your teammate, so a migration is a "heads up, pushing schema" message between humans; after pulling their changes, check what is actually applied (`supabase migration list`) before adding your own. And decide up front who pushes to production, so you never double-deploy or race a release. Pushing is always a deliberate human act here, never an agent's.
 - **Review each other's output.** Agents produce a lot of plausible code fast. Even with no pull-request gate, build the habit of reading the diff of what the other's agents committed (a quick `/code-review` on recent commits). Speed without a second set of eyes is how subtle wrong-but-plausible code ships.
 - **Share knowledge through `CLAUDE.md`, not memory.** `CLAUDE.md` is tracked and steers both your agents identically. Personal Claude memory is per-machine and does *not* travel, so anything the team needs to know goes in `CLAUDE.md`.
+- **Name every session.** With several agents going, launch each with a name — the kit's `wt` / `cockpit` / `sesh` launchers set the session `--name` for you. It shows in the `/resume` picker and the terminal title, so you can find a past conversation and tell a dozen windows apart. An unnamed session is a generic path and an indistinguishable tab. (More in [`docs/WORKTREE-MODE.md`](./docs/WORKTREE-MODE.md#name-every-session).)
 
 The loop, in one line: claim a lane, pull-rebase, work with your agents, integrate through the cockpit, review, and keep schema and deploys coordinated by hand.
 

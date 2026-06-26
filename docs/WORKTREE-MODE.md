@@ -48,22 +48,29 @@ echo 'source /path/to/agent-team-kit/worktree-commands.sh' >> ~/.zshrc   # (or ~
 Then:
 
 ```bash
-cockpit              # the dashboard: a session in the main checkout (run from repo root)
-wt grading-fix       # a worker: new worktree on branch `grading-fix` + a session in it,
+cockpit              # the dashboard: a NAMED session in the main checkout (run from repo root)
+wt grading-fix       # a worker: new worktree on branch `grading-fix` + a NAMED session in it,
                      #   permissions skipped — equals:
-                     #   claude --worktree grading-fix --dangerously-skip-permissions
+                     #   claude --worktree grading-fix --name "Grading fix" --dangerously-skip-permissions
 wtls                 # list active worktrees + branches
-wtmerge grading-fix  # from the cockpit: merge that worker's branch into main + clean up
 ```
 
-(Tip: `wt grading-fix` then add `--tmux` inside the function, or pass extra `claude` flags like `wt grading-fix --model opus`.)
+Every launcher auto-sets a session **name** (shown in `/resume` and the terminal title) and skips permissions. **Integration is not a shell command** — from the cockpit, just tell Claude "integrate grading-fix" and it runs the `merge-worktree` skill (clean-tree check, conflict surfacing, prune, and it stops short of pushing).
+
+(Tip: `wt grading-fix --tmux` puts the worker in its own tmux session; extra flags pass through, e.g. `wt grading-fix --model opus`.)
+
+### Name every session
+
+With several agents going, names are how you stay sane. The launchers set one automatically (`--name`), and it shows in two places: the **`/resume` picker** (so you can find "that grading conversation" later) and the **terminal title** (so you can tell a dozen windows apart at a glance). `wt grading-fix` → "Grading fix"; `cockpit` in a repo named `app` → "app cockpit"; `sesh rubric-copy` → "Rubric copy".
+
+This matters in **both** modes — even on stay-on-main, name every agent with `sesh <name>`. An unnamed session is a generic path in `/resume` and an indistinguishable terminal tab; a named one is findable and glanceable. Make naming a habit, not an afterthought.
 
 ### The integration loop
 
 1. **Cockpit up.** Pinned terminal: `cockpit`. This is where you watch and integrate.
 2. **Fire workers.** New terminal per task: `wt fix-citations`, `wt rubric-copy`, … each gets an isolated worktree + session and goes to work. Name them for the task — that name becomes the branch you'll merge.
 3. **Workers commit to their branches.** They blanket-stage and commit freely (their tree is their own; the guard relaxes). They do **not** merge or push.
-4. **Integrate from the cockpit** as each finishes: `wtmerge fix-citations`. It merges the branch into `main` on a clean tree and prunes the worktree. Disjoint work merges trivially; overlapping work surfaces a conflict to resolve there.
+4. **Integrate from the cockpit** as each finishes: tell the cockpit Claude "integrate fix-citations" (the `merge-worktree` skill). It verifies a clean tree, merges into `main`, surfaces any conflict instead of guessing, and prunes the worktree. Disjoint work merges trivially; overlapping work becomes a conflict you resolve there.
 5. **Ship.** When the merged work is ready, `/push` from the cockpit (the one deliberate, paid act).
 
 ## Setup deltas vs stay-on-main

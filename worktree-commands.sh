@@ -1,49 +1,57 @@
 #!/usr/bin/env bash
-# agent-team-kit — worktree-mode convenience commands.
+# agent-team-kit — convenience commands for launching NAMED Claude Code sessions.
 #
 # Source this from your shell rc so the functions are always available:
 #   echo 'source /path/to/agent-team-kit/worktree-commands.sh' >> ~/.zshrc
-# (or just paste the functions in). Works in bash and zsh. They wrap Claude
-# Code's native worktree support so spinning up a worker is one short command.
+# (or paste the functions in). Works in bash and zsh.
 #
-# The model: keep ONE pinned terminal running `cockpit` (your dashboard on
-# main). Every other terminal is a `wt <name>` worker in its own worktree.
+# Every launcher does two things that matter when juggling many agents:
+#   - skips permissions (--dangerously-skip-permissions), and
+#   - sets a session NAME (--name), which shows in the /resume picker AND the
+#     terminal title. Naming is how you tell a dozen windows apart and find a
+#     past conversation later — do it for every session.
+#
+# Worktree mode: keep ONE pinned terminal on `cockpit` (dashboard on main);
+# every other terminal is `wt <name>` (a worker in its own worktree).
+# Stay-on-main mode: use `sesh <name>` for each named agent in the shared tree.
 
-# wt <name> — spin up a NEW worker: a fresh git worktree on branch <name> with a
-# Claude Code session in it, permissions skipped. Your per-task terminal.
-#   wt grading-fix
-# Extra args pass through to claude (e.g. `wt grading-fix --model opus`).
+# Prettify a kebab/snake name into a display name (spaces; first word capitalized).
+_atk_pretty() {
+  printf '%s' "$1" | tr '_-' '  ' | awk '{ $1 = toupper(substr($1, 1, 1)) substr($1, 2) } 1'
+}
+
+# wt <name> — WORKER: a fresh git worktree on branch <name> + a named Claude
+# session in it, permissions skipped. Your per-task terminal (worktree mode).
+#   wt grading-fix     # branch `grading-fix`, session named "Grading fix"
 wt() {
   if [ -z "${1:-}" ]; then echo "usage: wt <name> [claude args...]"; return 1; fi
   local name="$1"; shift
-  claude --worktree "$name" --dangerously-skip-permissions "$@"
+  claude --worktree "$name" --name "$(_atk_pretty "$name")" --dangerously-skip-permissions "$@"
   # Tip: add --tmux to put each worker in its own tmux session.
 }
 
-# cockpit — your DASHBOARD: a Claude Code session in the MAIN checkout (on main),
-# permissions skipped like the workers. This seat does the integration (merging
-# worker branches) and the push. Run it from the repo root.
+# cockpit — DASHBOARD: a named Claude session in the MAIN checkout (on main),
+# permissions skipped. Does the integration (merging worker branches) and the
+# push. Run from the repo root. Names itself "<repo> cockpit".
 cockpit() {
-  claude --dangerously-skip-permissions "$@"
+  local repo; repo=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)" 2>/dev/null)
+  claude --name "${repo:+$repo }cockpit" --dangerously-skip-permissions "$@"
 }
 
-# wtls — list the active worktrees and their branches.
-wtls() {
-  git worktree list
+# sesh <name> — a named Claude session in the CURRENT directory (no worktree),
+# permissions skipped. Use this for stay-on-main multi-agent work so /resume and
+# your terminal titles show a real name instead of a path.
+#   sesh rubric-copy   # session named "Rubric copy"
+sesh() {
+  if [ -z "${1:-}" ]; then echo "usage: sesh <name> [claude args...]"; return 1; fi
+  local name="$1"; shift
+  claude --name "$(_atk_pretty "$name")" --dangerously-skip-permissions "$@"
 }
 
-# wtmerge <branch> — from the COCKPIT (on main, clean tree), merge a finished
-# worker's branch into main and clean up. Run after that worker's session ends.
-# Assumes the branch name == the name you passed to `wt` (check with `wtls`).
-#   wtmerge grading-fix
-wtmerge() {
-  if [ -z "${1:-}" ]; then echo "usage: wtmerge <branch>  (from the cockpit, on main)"; return 1; fi
-  local branch="$1"
-  git merge --no-edit "$branch" || {
-    echo "merge conflict in $branch — resolve it, 'git commit', then continue. Nothing auto-pushed."
-    return 1
-  }
-  git worktree prune
-  git branch -d "$branch" 2>/dev/null || echo "  (branch $branch not deleted; remove manually if intended)"
-  echo "merged $branch into main. Review the diff, then /push when ready."
-}
+# wtls — list active worktrees + branches (a read-only glance).
+wtls() { git worktree list; }
+
+# Integration (merging a finished worker's branch into main) is NOT a shell
+# command — you do it from inside the cockpit session by asking Claude, which
+# runs the `merge-worktree` skill (clean-tree check, conflict surfacing, prune,
+# and it stops short of pushing). Just say: "integrate grading-fix".
