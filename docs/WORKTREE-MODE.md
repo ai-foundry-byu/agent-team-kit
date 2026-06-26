@@ -34,7 +34,7 @@ The single behavioral difference — the shared-tree git guard — **auto-detect
 
 The model is two kinds of terminal:
 
-- **One pinned terminal = the cockpit.** A plain Claude Code session in the **main checkout**, on `main`. This is your dashboard: it watches the repo, does the integration (merging finished worker branches), and runs the push. Permissions stay **on** here — merging and pushing are the acts you want to see.
+- **One pinned terminal = the cockpit.** A Claude Code session in the **main checkout**, on `main`, permissions skipped like the workers. This is your dashboard: it watches the repo, does the integration (merging finished worker branches), and runs the push.
 - **Every other terminal = a worker.** A Claude Code session in its **own git worktree** on its own branch, permissions skipped, pointed at one task. Spin up as many as you want; they can't collide on files.
 
 ### The commands

@@ -20,12 +20,11 @@ wt() {
   # Tip: add --tmux to put each worker in its own tmux session.
 }
 
-# cockpit — your DASHBOARD: a plain Claude Code session in the MAIN checkout
-# (on main). This seat does the integration (merging worker branches) and the
-# push. Permissions stay ON here on purpose: those are the high-stakes acts you
-# want to see. Run it from the repo root.
+# cockpit — your DASHBOARD: a Claude Code session in the MAIN checkout (on main),
+# permissions skipped like the workers. This seat does the integration (merging
+# worker branches) and the push. Run it from the repo root.
 cockpit() {
-  claude "$@"
+  claude --dangerously-skip-permissions "$@"
 }
 
 # wtls — list the active worktrees and their branches.
