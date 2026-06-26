@@ -36,7 +36,14 @@ A hook returns its verdict by exit code: **exit 0** allows (and is silent), **ex
 
 **Why it matters.** This is the single most valuable piece, because dev-server port thrash is the most frequent real-world collision. Without it, every agent assumes Vite's default `5173`, so multiple `pnpm dev` instances fight over one port and you get 503s, phantom 404s, and dead clicks that look like app bugs but are just two servers colliding. Reserving `5173` for the human and handing each agent its own port removes an entire class of "is the app broken or is it me" confusion. `--strictPort` matters too: if two sessions race onto the same port, the second `pnpm dev` fails loudly instead of silently drifting onto someone else's server.
 
-**Customize.** `LOW`/`HIGH` (the range) and the reserved human port. If your dev server isn't Vite, the only change is the suggested command string in the injected context.
+**Customize (the per-project config block at the top of the file).** Four constants:
+- `POOL_LOW` / `POOL_HIGH` — the agent dev-server pool (default `5180`–`5199`, 20 slots).
+- `RESERVED_PORT` — your dev server's default port, kept for the human. Vite's `5173` by default; Next's is `3000`; a custom server is whatever you set.
+- `START_HINT(port)` — how your stack launches a dev server on a chosen port: `pnpm dev --port N --strictPort` (Vite/SvelteKit), `pnpm dev -p N` (Next), `PORT=N pnpm dev` (Node/Express).
+
+**Choosing the pool — what's off-limits.** Avoid privileged ports below `1024` (need root), the ephemeral range `49152`–`65535` (the OS hands these out for outbound connections, so binding there invites random collisions), and on macOS `5000`/`7000` (AirPlay Receiver / Control Center grab them — a classic "why won't my dev server start"). Steer clear of common local services too (`5432` Postgres, `3306` MySQL, `6379` Redis, `8080` proxies). The conventional dev-server zone is `3000`–`9999`; the default pool sits just above Vite's `5173` and clears all of the above. Don't leave the pool open-ended — a small *defined* range is what keeps agents off service and ephemeral ports.
+
+**One pool per app.** Port claims live in each repo's `.git/.wg-agent`, so two different apps' agents can't see each other's claims; only the bind-check catches a real collision. If you run agents on two apps at once, give each its own non-overlapping pool (e.g. app A `5180`–`5199`, app B `3010`–`3029`) so they never contend for the same OS port.
 
 **Limits.** The claim reduces races but can't fully prevent two simultaneous SessionStarts from picking the same free port; `--strictPort` is the backstop. It assigns a port; it does not start or stop servers.
 

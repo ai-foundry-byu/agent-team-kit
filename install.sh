@@ -68,7 +68,7 @@ cat <<EOF
 Installed into $TARGET. Next:
   1. Customize for your stack (skip if Supabase + pnpm):
        scripts/hooks/bash-guard.mjs   SCHEMA_RE / PSQL_DDL_RE
-       scripts/hooks/dev-port.mjs     port range
+       scripts/hooks/dev-port.mjs     port pool + RESERVED_PORT + START_HINT (your dev command)
        .githooks/post-merge           migrations dir
   2. (optional) Build the feedback loop: hand docs/FEEDBACK-LOOP-SPEC.md to your
      coding agent: "build the feedback loop from this spec for our stack."

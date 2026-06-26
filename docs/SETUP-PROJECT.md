@@ -19,7 +19,7 @@ The kit is run *against* your repo, not nested inside it. `install.sh` is idempo
 The defaults assume Supabase + pnpm. Edit:
 
 - `scripts/hooks/bash-guard.mjs` — `SCHEMA_RE` (the commands that serialize behind the schema lock) and `PSQL_DDL_RE` (the ad-hoc-DDL block; remove it if you don't use psql).
-- `scripts/hooks/dev-port.mjs` — `LOW`/`HIGH` port range and the reserved human port.
+- `scripts/hooks/dev-port.mjs` — the config block: `POOL_LOW`/`POOL_HIGH` (the agent port pool), `RESERVED_PORT` (your dev server's default port, kept for the human), and `START_HINT` (your stack's dev-server command). Give each app its own non-overlapping pool if you run several at once.
 - `.githooks/post-merge` — the migrations directory it watches.
 
 ## What gets committed vs stays local
