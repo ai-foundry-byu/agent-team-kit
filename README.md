@@ -37,6 +37,7 @@ Agents are separate processes that cannot talk to each other, so coordination ro
 | `install.sh` | Wires the hooks, skills, and bootstrap into a target project |
 | `bootstrap.sh` | One-command local setup a collaborator runs after cloning |
 | `docs/HOOKS.md`, `docs/SKILLS.md` | Detailed per-artifact reference (every hook, every skill) |
+| `docs/FEEDBACK-LOOP-SPEC.md` | Stack-agnostic build spec for the in-app feedback + bug-fix loop |
 | `docs/` | Project setup, collaborator setup, design notes |
 
 ---
@@ -65,6 +66,12 @@ The hooks stop the mechanical collisions. This is the human model that wraps the
 The loop, in one line: claim a lane, pull-rebase, work with your agents, integrate through the cockpit, review, and keep schema and deploys coordinated by hand.
 
 ---
+
+## Included: the AI-native feedback loop
+
+[`docs/FEEDBACK-LOOP-SPEC.md`](./docs/FEEDBACK-LOOP-SPEC.md) is a high-fidelity, stack-agnostic spec for a feedback system built for the AI-native era: a one-click widget that captures a report with rich machine context (screenshot, breadcrumbs, console and network rings, errors, environment, all secret-scrubbed in the browser), an admin inbox that hands the whole bundle to a coding agent with `/fix-bug <id>`, and a `post-commit` hook that resolves the report and notifies the reporter, bound to the fix commit. It pairs with the bundled `fix-bug` skill, which is the agent side of the same loop.
+
+It's a spec rather than code because the right implementation depends on your stack, but it is detailed down to the modal layout, the database schema and constraints, the capture bundle shape, and a build checklist, so a coding agent can build it in SvelteKit, React, Rails, or anything. It assumes Supabase and calls out the generic equivalent for every Supabase-specific piece. This is, on its own, one of the higher-leverage things a small product team can stand up: it makes reporting cheap, fixing well-informed, and the reply automatic.
 
 ## What we haven't fully solved (gaps worth closing)
 
