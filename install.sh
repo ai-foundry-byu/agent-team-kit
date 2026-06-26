@@ -24,7 +24,8 @@ cp "$KIT/bootstrap.sh" "$TARGET/bootstrap.sh"
 chmod +x "$TARGET/bootstrap.sh"
 mkdir -p "$TARGET/docs"
 cp "$KIT/docs/FEEDBACK-LOOP-SPEC.md" "$TARGET/docs/FEEDBACK-LOOP-SPEC.md"
-echo "[ok] hook scripts, skills, bootstrap.sh, and the feedback spec in place"
+cp "$KIT/docs/SIDEBAR-SPEC.md" "$TARGET/docs/SIDEBAR-SPEC.md"
+echo "[ok] hook scripts, skills, bootstrap.sh, and the build specs in place"
 
 # 2. .claude/settings.json (the Claude Code hook wiring).
 if [ ! -f "$TARGET/.claude/settings.json" ]; then
