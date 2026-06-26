@@ -19,3 +19,10 @@
 #
 # Cross-session agent coordination state lives under .git/.wg-agent/ (inside
 # .git), so it is never tracked and needs no ignore rule.
+
+# High-fidelity design mockups live in .mockups/ for fast review (the agent
+# hands you a clickable file:// link). Gitignored so they never get committed
+# or muddy code search. Disposable: once a design is built into the app, the
+# mockup's job is done.
+.mockups/
+.scratch/

@@ -4,9 +4,8 @@ A small set of conventions that keep an agent-driven repo tidy. They are stack-a
 
 ## Scratch and mockups
 
-- Throwaway scratch files and mockups go in a **gitignored** directory (e.g. `.mockups/`, `.scratch/`). Never commit them.
-- A mockup worth keeping goes in a **tracked** `docs/mockups/`.
-- When an agent makes a temp file, it should report a clickable path, not leave a committed artifact behind.
+- Throwaway scratch files and high-fidelity mockups go in a **gitignored** directory (e.g. `.mockups/`, `.scratch/`). Never commit them, and never promote them: once a mockup's design is built into the app, it's done.
+- When an agent makes a temp file or a mockup, it should report a clickable `file://` path so you can open and review it in one click, not leave a committed artifact behind.
 
 ## Formatting
 

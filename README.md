@@ -78,7 +78,8 @@ agent-team-kit/
 │   ├── gitignore-additions.txt   # .gitignore lines to share settings + skills
 │   ├── CLAUDE-md-main.md          # "concurrent agents on main" rules (the stay-on-main lane)
 │   ├── CLAUDE-md-worktree.md      # the worktree-mode variant of that section
-│   └── CLAUDE-md-working-discipline.md   # the definition-of-done section
+│   ├── CLAUDE-md-working-discipline.md   # the definition-of-done section
+│   └── CLAUDE-md-mockups.md       # the mockups / design-iteration loop (gitignored .mockups/)
 │
 └── docs/                         # the reading
     ├── ADOPT.md                  # START HERE to install: the 3 adoption paths + prerequisites

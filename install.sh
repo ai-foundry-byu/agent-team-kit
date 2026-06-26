@@ -60,6 +60,12 @@ else
   echo "[ok] appended .claude share rules to .gitignore"
 fi
 
+# 3b. .gitignore, ignore the mockups scratch dir (out of code search + commits).
+if ! grep -qxF '.mockups/' "$GI"; then
+  printf '\n# agent-team-kit: high-fidelity design mockups (gitignored; out of code search + commits)\n.mockups/\n' >> "$GI"
+  echo "[ok] added .mockups/ to .gitignore"
+fi
+
 # 4. CLAUDE.md, the concurrent-agents rules (append-only, guarded).
 CM="$TARGET/CLAUDE.md"
 if [ -f "$CM" ] && grep -qF 'Concurrent agents on' "$CM"; then
@@ -77,6 +83,15 @@ else
   printf '\n' >> "$CM"
   awk 'f; /-->/{f=1}' "$KIT/snippets/CLAUDE-md-working-discipline.md" >> "$CM"
   echo "[ok] appended the working-discipline section to CLAUDE.md"
+fi
+
+# 4c. CLAUDE.md, the mockups / design-iteration section.
+if [ -f "$CM" ] && grep -qF 'Mockups and design iteration' "$CM"; then
+  echo "[ok] CLAUDE.md already has the mockups section"
+else
+  printf '\n' >> "$CM"
+  awk 'f; /-->/{f=1}' "$KIT/snippets/CLAUDE-md-mockups.md" >> "$CM"
+  echo "[ok] appended the mockups section to CLAUDE.md"
 fi
 
 # 5. Enable the project's git hooks.
