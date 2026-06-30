@@ -11,7 +11,13 @@
  * blocks the command and tells Claude why; exit 0 allows. The lock is LOCAL:
  * it coordinates this machine's agents, not the remote collaborator.
  */
-import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import {
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  appendFileSync,
+} from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 import {
   payload,
@@ -118,6 +124,67 @@ function schemaLockBlock(cmd, p) {
 const PSQL_DDL_RE =
   /\bpsql\b[^|;&]*\b((create|alter|drop)\s+(table|index|(materialized\s+)?view|function|trigger|policy|schema|type|sequence|extension|publication|role|database|domain)|truncate\b|grant\b|revoke\b|comment\s+on\b)/i;
 
+// --- C. anti-sweep (shared index) ---------------------------------------------
+// The git index is SHARED across every agent on this `.git`, so a pathspec-less
+// `git commit` commits the WHOLE index, including files another agent staged a
+// moment ago (exactly how cross-agent "sweeps" happen). We record the paths
+// THIS session stages (git add/mv/rm) and block a pathspec-less commit that
+// would carry files this session never staged. The fix it points to is the
+// right pattern anyway: `git commit -m "..." -- <your paths>` commits only those.
+function ownedLedger(p) {
+  return join(coordDir(p.cwd), `staged-${p.session_id || "x"}.txt`);
+}
+
+function recordStaged(cmd, p) {
+  const paths = [];
+  for (const m of cmd.matchAll(/\bgit\s+(?:add|mv|rm|stage)\b([^|&;]*)/g)) {
+    for (const a of m[1].split(/\s+/))
+      if (a && !a.startsWith("-") && a !== "--") paths.push(a);
+  }
+  if (!paths.length) return;
+  try {
+    appendFileSync(ownedLedger(p), paths.join("\n") + "\n");
+  } catch {
+    /* best-effort ledger */
+  }
+}
+
+function commitSweepBlock(cmd, p) {
+  if (!/\bgit\s+commit\b/.test(cmd)) return null;
+  if (/--amend\b/.test(cmd)) return null; // amend is a separate (message) flow
+  if (/\s--(\s|$)/.test(cmd)) return null; // explicit `-- <pathspec>`, already scoped
+  let staged;
+  try {
+    staged = execFileSync("git", ["diff", "--cached", "--name-only"], {
+      cwd: p.cwd,
+      encoding: "utf8",
+    })
+      .split("\n")
+      .filter(Boolean);
+  } catch {
+    return null; // not a repo / git error, don't block
+  }
+  if (!staged.length) return null;
+  let owned = new Set();
+  try {
+    owned = new Set(
+      readFileSync(ownedLedger(p), "utf8").split("\n").filter(Boolean),
+    );
+  } catch {
+    /* no ledger, nothing owned yet */
+  }
+  const foreign = staged.filter((f) => !owned.has(f));
+  if (!foreign.length) return null; // everything staged is ours, safe
+  return (
+    `This pathspec-less \`git commit\` would sweep ${foreign.length} file(s) you didn't stage ` +
+    `into your commit, another agent staged them in the shared index:\n  ` +
+    foreign.slice(0, 8).join("\n  ") +
+    (foreign.length > 8 ? `\n  ...+${foreign.length - 8} more` : "") +
+    `\nCommit only your own paths: \`git commit -m "..." -- <your files>\` ` +
+    `(commits just those, ignoring the rest of the shared index).`
+  );
+}
+
 function main() {
   const p = payload();
   if ((p.tool_name || "") !== "Bash") process.exit(0);
@@ -140,6 +207,16 @@ function main() {
     if (linked && g.sharedTreeOnly) continue;
     if (g.re.test(cmd)) {
       process.stderr.write(g.msg + "\n");
+      process.exit(2);
+    }
+  }
+
+  // Anti-sweep is a shared-tree concern; a linked worktree has its own index.
+  if (!linked) {
+    recordStaged(cmd, p);
+    const sweepMsg = commitSweepBlock(cmd, p);
+    if (sweepMsg) {
+      process.stderr.write(sweepMsg + "\n");
       process.exit(2);
     }
   }

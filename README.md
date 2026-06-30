@@ -54,7 +54,7 @@ agent-team-kit/
 │   ├── settings.json             # .claude/settings.json wiring that registers the Claude hooks
 │   ├── scripts/                  # Claude Code hooks (coordination + code-quality)
 │   │   ├── dev-port.mjs          # SessionStart: give this session its own dev-server port
-│   │   ├── bash-guard.mjs        # PreToolUse: git-safety + schema lock + ad-hoc psql DDL block
+│   │   ├── bash-guard.mjs        # PreToolUse: git-safety + commit-sweep guard + schema lock + ad-hoc psql DDL block
 │   │   ├── bash-guard.sh         # zero-spawn shell pre-filter in front of the guard
 │   │   ├── session-release.mjs   # SessionEnd: free this session's lock + port
 │   │   ├── agent-coord.mjs       # shared helpers (coordination dir, worktree detection)
@@ -94,6 +94,7 @@ agent-team-kit/
     ├── CONVENTIONS.md            # transferable repo conventions
     ├── FEEDBACK-LOOP-SPEC.md     # stack-agnostic build spec: the in-app feedback + bug-fix loop
     ├── SIDEBAR-SPEC.md           # stack-agnostic build spec: the collapsible left nav rail
+    ├── CRAWLERS-SPEC.md          # stack-agnostic build spec: the route/action/browser error crawlers
     ├── DESIGN-NOTES.md           # the reasoning behind every choice
     └── ORIGIN-CONVERSATION.md    # a redacted narrative of how the kit came to be
 ```
@@ -177,6 +178,12 @@ It's a spec rather than code because the right implementation depends on your st
 [`docs/SIDEBAR-SPEC.md`](./docs/SIDEBAR-SPEC.md) is a high-fidelity, stack-agnostic spec for a Claude-model collapsible left nav rail: an expanded panel that collapses to an icon-only rail where **every icon holds its exact vertical position** across the toggle (the detail most implementations get subtly wrong). It specifies the pinning technique (a frozen icon column + fixed row heights + section-headers-become-hairline-dividers), the full anatomy (header, scrollable body, an optional progress stepper, footer account row), drag-to-resize, persistence, collapsed tooltips, the mobile off-canvas drawer, and a build checklist.
 
 It also specifies the header's **version chip + release-notes** plumbing, which couples to the bundled `push` skill: a single version source, a typed `releases` data model, and a `/releases` surface the chip opens. Build those three pieces and `push` keeps them current on every ship. So the sidebar spec and the push skill interlock.
+
+## Included: the error crawlers
+
+[`docs/CRAWLERS-SPEC.md`](./docs/CRAWLERS-SPEC.md) is a high-fidelity, stack-agnostic spec for three backend crawlers that exercise a whole app to find errors before a user (or a demo audience) does: a **route crawler** that hits every page in a matrix of data states (valid, missing, malformed, foreign-owned, mismatched-nesting) and flags 404s, 500s, and cross-tenant leaks; an **action crawler** that POSTs empty and junk payloads at every form action and asserts it fails gracefully, never with a 500; and a **browser monkey** that drives a real browser to catch the client-side errors the other two can't see. Each finds a different class of error, and together they're a fast "is anything broken" pass you can run before every demo.
+
+It's a spec rather than code because route discovery, the data-state matrix, and the "graceful boundary vs. real content" classification are framework-shaped, but it is detailed down to the discovery walk, the classification rules, a hard **safety guard** (the crawlers decode the signed-in session and refuse to fire against anything but a disposable copy of the app), and a throwaway-database recipe, so a coding agent can build it in any stack. It assumes Postgres + Supabase with SvelteKit as the reference and calls out the generic equivalent throughout. Because the crawlers act on a disposable copy, they're safe to run destructively and cheap to run often.
 
 ## What we haven't fully solved (gaps worth closing)
 

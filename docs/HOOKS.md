@@ -51,7 +51,7 @@ A hook returns its verdict by exit code: **exit 0** allows (and is silent), **ex
 
 ## `bash-guard.mjs` + `bash-guard.sh`, PreToolUse: the gatekeeper on every shell command
 
-This is the largest hook and does three jobs. It runs before every Bash tool call, on the raw command string, and is the one place an agent can be *stopped* rather than nudged.
+This is the largest hook and does four jobs. It runs before every Bash tool call, on the raw command string, and is the one place an agent can be *stopped* rather than nudged.
 
 ### The pre-filter (`bash-guard.sh`)
 
@@ -89,6 +89,16 @@ This is the largest hook and does three jobs. It runs before every Bash tool cal
 **Why it matters.** The team's shared understanding of "what is the schema" rests on one invariant: every schema change is a tracked migration file applied through the migration tool, which records it in the database's `schema_migrations` table. DDL run straight through psql writes to the database but leaves *no* file and *no* row in that table, pure invisible drift, the exact thing that makes two people disagree about the schema. The block preserves the invariant. The reason it costs nothing: **DDL and querying are disjoint operations.** Querying is `SELECT`; blocking `ALTER`/`CREATE`/`DROP` removes zero query power, so you keep full freedom to inspect the database.
 
 **Customize / remove.** Drop it if you don't use psql. **Limits (important).** It is a tripwire, not a fence: it is regex (finite keyword list), it only knows `psql` (a Node `pg` script or a GUI sails past), and `psql -f` is an intentional hole. It is a client-side nudge toward migrations, not a security control. The real boundary, if you need a guarantee, is a **database role with no DDL privileges**.
+
+### Job 4: the commit-sweep guard
+
+**What it does.** Blocks a *pathspec-less* `git commit` when the index holds files this session never staged. Job 1 stops blanket *staging*; this stops the subtler sibling. The git index is shared across every agent on the repo, so even after a clean `git add path/a`, a plain `git commit -m "..."` commits the *whole* index, sweeping in whatever another agent staged a moment earlier. The guard records the paths each session stages (`git add`/`mv`/`rm`) under the coordination directory, and if a pathspec-less commit would carry files outside that set it refuses and points at the fix: `git commit -m "..." -- path/a path/b`, which commits only those paths and ignores the rest of the index.
+
+**Why it matters.** This is the failure Job 1 *doesn't* catch, and the one that actually keeps happening: nobody ran a blanket `git add`, every agent staged exactly its own files, yet one agent's plain commit still hoovered up another's staged work, because they share one index. Scoping the commit to explicit paths makes that physically impossible; the commit can only contain the paths you named.
+
+**How it stays friction-free.** It fires *only* when the index genuinely contains another session's files. A normal "stage my paths, commit" flow, where everything staged is yours, sails through untouched, and an explicit `git commit -- <paths>` or `git commit --amend` is always allowed. If you stage by some route the recorder misses (a glob), you get a false block whose escape hatch, `git commit -- <your paths>`, is the right pattern anyway.
+
+**Customize.** Nothing stack-specific here. **Limits.** The ownership ledger is best-effort (it parses `git add/mv/rm` arguments, not every possible staging route), and it relaxes inside a linked worktree, where each agent's index is private and a sweep can't happen.
 
 ---
 
