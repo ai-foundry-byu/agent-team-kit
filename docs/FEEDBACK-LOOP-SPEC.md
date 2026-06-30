@@ -63,6 +63,28 @@ The result is a feedback channel where reporting is cheap, fixing is well-inform
 
 ---
 
+## Findings come from humans or agents (the `source` tag)
+
+The loop above is drawn with a human reporter, but the same pipeline is the
+landing zone for **agent-generated** findings too. Add a `source` column to
+`bug_reports` (`'user'` by default) and let your QA agents file through the
+identical intake, tagged: the [crawlers](./CRAWLERS-SPEC.md) file
+`source: route-crawl` (and friends), the [ux-critique](../skills/ux-critique/SKILL.md)
+critic files `source: ux-critic`. They ride the same capture bundle, land in the
+same inbox, and hand off to `fix-bug` the same way, so you have **one inbox, one
+triage, one close path** whether the reporter was a person, a fuzzer, or the
+critic, and the inbox can filter "real reports only" vs "self-audit" by `source`.
+
+Two wrinkles when the reporter is an agent:
+- It runs against the [disposable environment](./DISPOSABLE-ENVIRONMENT.md), so
+  those findings live in the disposable inbox and **close there**, not via the
+  prod-targeted `post-commit` hook (a thin `bug:resolve` wrapper pointed at the
+  disposable env). Real user bugs still close the normal commit-bound way on prod.
+- The "reporter" is a synthetic account, so the close-the-loop **notification is
+  noise**, suppress it when `source` is an agent tag.
+
+---
+
 ## Part A, The widget (client)
 
 ### Mounting and positioning

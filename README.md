@@ -71,6 +71,7 @@ agent-team-kit/
 │   ├── push/                     # cut a release + push, guarded, with customer release notes
 │   ├── regression-check/         # impact analysis + behavior tests on shared-code changes
 │   ├── fix-bug/                  # load an in-app bug report from the DB and fix it
+│   ├── ux-critique/              # agentic UX critic: walk a flow, file findings as bugs
 │   ├── userflow-map/             # maintain a data-driven UI state-machine map
 │   └── merge-worktree/           # cockpit-side: integrate a worker branch into main
 │
@@ -95,6 +96,7 @@ agent-team-kit/
     ├── FEEDBACK-LOOP-SPEC.md     # stack-agnostic build spec: the in-app feedback + bug-fix loop
     ├── SIDEBAR-SPEC.md           # stack-agnostic build spec: the collapsible left nav rail
     ├── CRAWLERS-SPEC.md          # stack-agnostic build spec: the route/action/browser error crawlers
+    ├── DISPOSABLE-ENVIRONMENT.md # where agents drive: disposable project, fidelity, prod safety
     ├── DESIGN-NOTES.md           # the reasoning behind every choice
     └── ORIGIN-CONVERSATION.md    # a redacted narrative of how the kit came to be
 ```
@@ -185,13 +187,19 @@ It also specifies the header's **version chip + release-notes** plumbing, which 
 
 It's a spec rather than code because route discovery, the data-state matrix, and the "graceful boundary vs. real content" classification are framework-shaped, but it is detailed down to the discovery walk, the classification rules, a hard **safety guard** (the crawlers decode the signed-in session and refuse to fire against anything but a disposable copy of the app), and a throwaway-database recipe, so a coding agent can build it in any stack. It assumes Postgres + Supabase with SvelteKit as the reference and calls out the generic equivalent throughout. Because the crawlers act on a disposable copy, they're safe to run destructively and cheap to run often.
 
+## Included: the UX critic and the disposable environment
+
+The crawlers answer *did it break*; the [`ux-critique`](./skills/ux-critique/SKILL.md) skill answers *does it make sense*. It's an LLM critic that walks a flow with an **expectation loop** (predict, act, observe, judge) and files the gaps between expectation and reality through the **same feedback loop**, tagged by `source`, so agent findings land in the same inbox as human reports and hand off to `fix-bug` identically. Each run ends with a self-contained annotated report. Together with the crawlers that's the full agentic QA layer: one finds crashes, the other finds confusion, both file into one inbox.
+
+And the substrate that makes all of it safe to run: [`docs/DISPOSABLE-ENVIRONMENT.md`](./docs/DISPOSABLE-ENVIRONMENT.md), the discipline for *where* agents drive. Its core idea, **fidelity comes from turning stubs off, not from using prod**, lets you exercise the real production code path (real LLM spend, on purpose) against a database you can wipe, while a seatbelt (issuer-abort + prod-refusal guards) keeps the fuzzers off production entirely. This is what turns "let an agent fuzz the app" from a way to email your customers into a free, resettable safety net, and it directly closes the "separate dev from prod" gap below.
+
 ## What we haven't fully solved (gaps worth closing)
 
 Honest commentary, so you don't mistake this kit for more than it is. These are the next things an AI-native team should put in place:
 
 - **Local hooks are a nudge, not a gate. Add CI.** Every guard here runs only on machines that wired it, and can be bypassed with a different tool. The real enforcement layer is **CI on push**: run the tests, the lint, and any architecture guards in GitHub Actions so nothing merges to `main` green-on-one-laptop and broken everywhere else. Treat the local hooks as the fast in-loop reminder and CI as the actual gate.
 - **Secrets are the unguarded edge.** Sharing a `.env` file hands over full, often god-mode, database and provider access, and nothing in this kit changes that. For a team: never put real secrets in git, use a secrets manager or per-person scoped credentials, and if schema integrity matters, enforce it at the **database role** level (an app role with no DDL privileges), not just the psql hook.
-- **Separate dev from prod.** If your `.env` points every agent and teammate at the *production* database, then a stray `seed --reset` or destructive query hits real data, and the schema lock can't help across machines. Give the team a throwaway dev database with its own credentials; keep prod access narrow and human-only.
+- **Separate dev from prod** (now addressed, see [`docs/DISPOSABLE-ENVIRONMENT.md`](./docs/DISPOSABLE-ENVIRONMENT.md)). If your `.env` points every agent and teammate at the *production* database, then a stray `seed --reset` or destructive query hits real data, and the schema lock can't help across machines. Give the team a throwaway dev database with its own credentials; keep prod access narrow and human-only. The disposable-environment doc is the full treatment: the two-knob (where × stubs) model, the seatbelt guards, and migration porting.
 - **Decide the review and revert norms.** Committing straight to `main` means recovery is `git revert`, not branch hygiene. Agree up front on how you review (cadence, who, what triggers it) and how you roll back, before the first bad commit, not after.
 - **Watch the spend.** Several agents per person burns tokens and (if you deploy on push) build minutes fast. Set a shared expectation for both.
 

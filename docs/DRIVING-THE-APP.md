@@ -57,6 +57,15 @@ This is a spec, not code, because the implementation differs by stack. For a typ
 
 The payoff: you say "run the grading flow and show me," and Claude drives the real app, reports the URLs it hit and a screenshot of the result, instead of you clicking through and it guessing. Build the layer that fits your stack; the value is the same, the human sees what the app did without doing the clicking.
 
+## 4. Reliability gotchas when an agent drives the browser
+
+Hard-won, from running the [crawlers](./CRAWLERS-SPEC.md) and the [ux-critique](../skills/ux-critique/SKILL.md) critic. Browser automation is flaky in specific, predictable ways; design around them instead of fighting them.
+
+- **The first synthetic click often does not register.** A coordinate click can land before the element is interactive, so it highlights but does nothing; the second works. This silently eats sign-ins and nav clicks. The fix: do not click hopeful coordinates for load-bearing actions. Fill inputs by **element-reference**, then **submit the form via JS** (`form.requestSubmit()`), or click by a stable ref with a verify-and-retry. A real form-POST then redirect is solid once submitted; it is the coordinate click that is unreliable.
+- **Distinguish a tool flake from a real app bug.** "First click did nothing, second worked" can be the automation flake above *or* a genuine app race (e.g. a realtime subscription firing an `invalidate()` that cancels an in-flight client-side navigation). Same symptom, different cause. Before filing it as a bug, check whether the failing target is on a page that even has the suspected mechanism, and reproduce by hand; do not let your own synthetic-click flakiness masquerade as a product bug.
+- **A backgrounded tab freezes `requestAnimationFrame` and `ResizeObserver`.** When the automated tab is not the foreground tab, the browser throttles it: rAF and RO callbacks never fire, so anything that lays out or animates on them looks broken or empty. Pump a frame (take a screenshot, which forces a paint) before reading the DOM, and do not trust an "empty" measurement from a hidden tab.
+- **Verify by reading URLs and the DOM in tool results, not by eyeballing pixels.** A screenshot tells you it *looks* right; the URL trail and DOM tell you it *is* right. Assert on those.
+
 ---
 
-These pair naturally: the puppet-strings harness drives a flow, the screenshot/recording capability captures it, and the port + verify-by-URL disciplines keep both reliable across many concurrent agents.
+These pair naturally: the puppet-strings harness drives a flow, the screenshot/recording capability captures it, the reliability gotchas above keep the driving honest, and the port + verify-by-URL disciplines keep it all reliable across many concurrent agents.
