@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Pre-commit gate — fast, staged-files-only. Runs the architecture guards
+# (file-size + import-boundary) on the files in THIS commit, so sprawl and
+# boundary violations never enter history. Add your formatter / linter where
+# marked. Heavier checks (typecheck, tests) run at pre-push, not here, so
+# "commit often" stays cheap.
+#
+# Scoped to the staged files on purpose: it stays fast and never sweeps
+# unrelated pre-existing drift into your commit.
+#
+# Emergency bypass: git commit --no-verify
+
+set -uo pipefail
+
+root=$(git rev-parse --show-toplevel) || exit 0
+cd "$root" || exit 0
+
+# Staged, still-present files (Added/Copied/Modified/Renamed). NUL-delimited and
+# read with a while-loop (not mapfile) for bash 3.2 — macOS ships 3.2.
+staged=()
+while IFS= read -r -d '' f; do
+  staged+=("$f")
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+[ ${#staged[@]} -eq 0 ] && exit 0
+
+status=0
+
+# Architecture guards (file-size + import-boundary), staged files only.
+if command -v node >/dev/null 2>&1; then
+  if ! node "$root/scripts/hooks/arch-check.mjs" "${staged[@]}"; then
+    status=1
+  fi
+fi
+
+# ── Add your formatter / linter here (staged files only), e.g.:
+#   pnpm -s exec prettier --check "${staged[@]}" || status=1
+#   pnpm -s exec eslint "${staged[@]}"           || status=1
+
+if [ $status -ne 0 ]; then
+  echo ""
+  echo "  Bypass (you own what you commit): git commit --no-verify"
+fi
+
+exit $status

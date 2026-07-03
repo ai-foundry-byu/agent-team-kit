@@ -1,0 +1,31 @@
+#!/bin/sh
+# post-merge — surface DB migrations that just arrived from upstream.
+#
+# With two people committing to `main`, a `git pull` can bring the
+# collaborator's migration files into your tree while the shared dev DB is
+# already ahead (or behind) your local schema. Git is the ledger for schema
+# changes, but a quiet pull is easy to miss, so flag it loudly. Silent when
+# no migration files changed in the merge.
+git rev-parse --verify -q ORIG_HEAD >/dev/null 2>&1 || exit 0
+
+added=$(git diff --name-only --diff-filter=A ORIG_HEAD HEAD -- supabase/migrations/ 2>/dev/null)
+modified=$(git diff --name-only --diff-filter=M ORIG_HEAD HEAD -- supabase/migrations/ 2>/dev/null)
+[ -z "$added" ] && [ -z "$modified" ] && exit 0
+
+echo ""
+echo "=================================================================="
+echo "  DB migrations changed in what you just pulled:"
+if [ -n "$added" ]; then
+  echo "  New:"
+  printf '%s\n' "$added" | while IFS= read -r f; do echo "    + $f"; done
+fi
+if [ -n "$modified" ]; then
+  echo "  Modified (may already be applied; reconcile by hand):"
+  printf '%s\n' "$modified" | while IFS= read -r f; do echo "    ~ $f"; done
+fi
+echo ""
+echo "  Apply them:   supabase db push"
+echo "  Check drift:  supabase migration list   (local vs applied)"
+echo "=================================================================="
+echo ""
+exit 0

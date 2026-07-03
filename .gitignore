@@ -1,0 +1,7 @@
+.DS_Store
+
+# Raw Claude Code session transcripts are kept private and NEVER committed:
+# a verbatim export embeds injected project context (config, infra names,
+# architecture). The redacted narrative in docs/ORIGIN-CONVERSATION.md is the
+# shareable record instead.
+*.jsonl

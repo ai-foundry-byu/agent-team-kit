@@ -1,0 +1,28 @@
+# ===== agent-team-kit =====
+#
+# If your .gitignore has a blanket `.claude/` line, REPLACE it with the three
+# lines below. They ignore .claude/ by default but re-include the shared hook
+# wiring and project skills, so those travel to collaborators on clone/pull
+# while personal config stays local.
+#
+# (A bare `!.claude/settings.json` does NOT work while the parent `.claude/`
+# is excluded, hence the `.claude/*` form: you can only re-include a file when
+# its parent directory is not itself ignored.)
+
+.claude/*
+!.claude/settings.json
+!.claude/skills/
+
+# .claude/settings.local.json stays ignored by the rule above. Put personal,
+# machine-specific, or permission config there; it merges over the shared
+# settings.json, with local winning.
+#
+# Cross-session agent coordination state lives under .git/.wg-agent/ (inside
+# .git), so it is never tracked and needs no ignore rule.
+
+# High-fidelity design mockups live in .mockups/ for fast review (the agent
+# hands you a clickable file:// link). Gitignored so they never get committed
+# or muddy code search. Disposable: once a design is built into the app, the
+# mockup's job is done.
+.mockups/
+.scratch/
