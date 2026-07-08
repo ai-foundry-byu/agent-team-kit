@@ -2,6 +2,8 @@
 
 Three related capabilities for seeing and showing what the running app actually does, without clicking through it by hand: high-fidelity screenshots, clean recorded walkthroughs, and driving the app programmatically. They build on two disciplines the rest of the kit already establishes, which is why they live here.
 
+> The sibling to this doc, for when *you* take the keyboard instead of an agent, is [`HANDS-ON-EDITS.md`](./HANDS-ON-EDITS.md): jumping from a rendered element to its source file in one click, and committing only that file without sweeping in a sibling's work.
+
 **The two disciplines they share:**
 
 - **Own dev server on your assigned port.** Start your own (`pnpm dev --port <N> --strictPort`, backgrounded), read the real bound port from the log, and never trust `5173`: it is usually another session's, and concurrent HMR causes phantom failures. Kill only your own PID on cleanup. (This is the kit's `dev-port` hook in action.)
