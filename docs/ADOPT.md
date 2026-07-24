@@ -90,6 +90,25 @@ Same install you already did, now with a second clone plus the agreements active
 
 ---
 
+## Optional: the hub-and-spokes workspace setup
+
+Separate from installing the kit *into a repo*, and done **once per machine**: the
+hub-and-spokes tooling sets up how you launch Claude across a project whose files are
+scattered (code repo + shared drive + org/personal storage). One neutral **hub** per
+project is the base and the memory anchor; all content is a **spoke** mounted via
+`--add-dir`. It's orthogonal to the per-repo install above — a repo you harden with the
+installer is simply one of a hub's spokes.
+
+```bash
+./hub/install-hub.sh            # create ~/hubs, install the `hub` dispatcher + template, add the alias
+hub new myproject               # scaffold a cockpit
+$EDITOR ~/hubs/myproject/launch # set SPOKES (one --add-dir per content folder)
+hub myproject                   # launch
+```
+
+The full pattern, the privacy-ring model, and the honest limits are in
+[`HUB-AND-SPOKES.md`](./HUB-AND-SPOKES.md).
+
 ## Updating later
 
 Re-run the pull-it-in block any time to refresh the hooks, skills, and spec to the latest kit version (it's idempotent). One caveat: re-running **overwrites the hook scripts**, so if you've customized `bash-guard.mjs` or `dev-port.mjs` for your stack, keep those tweaks minimal and re-apply them after an update (or fork the kit and install from your fork).
