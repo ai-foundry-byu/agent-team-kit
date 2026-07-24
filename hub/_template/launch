@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+#
+# launch — start Claude Code for THIS hub (cockpit).  Copied from the kit's _template.
+#
+# The hub is the neutral BASE: it anchors ONE memory brain (keyed to its path) and owns no
+# content. Put nothing substantive here. Each content folder is a SPOKE, mounted read/write
+# via --add-dir. Launch only through `hub <name>` so the base is always this folder.
+#
+# TO SET UP THIS HUB:
+#   1. Add one entry to SPOKES per content folder (absolute paths).
+#   2. Leave sensitive folders OUT of SPOKES; mount them per-run instead:
+#        hub <name> --add-dir "/path/to/private/folder"
+#   3. (optional) Flip SKIP_PERMISSIONS to "yes" only if you fully trust these spokes.
+#
+set -euo pipefail
+
+# This hub's path is derived from the script's own location, so the base can't drift out of
+# sync with its folder. Do not move the hub after its first launch — memory is keyed to it.
+HUB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# --- content spokes: absolute paths, one per folder -------------------------------------
+SPOKES=(
+  # "/Users/you/code/my-repo"
+  # "/Users/you/Library/CloudStorage/GoogleDrive-you@example.com/My Drive/My Project"
+)
+
+# Skip Claude's per-action permission prompts? Convenient, but then Bash can read anywhere
+# on disk without asking (file tools stay fenced regardless). See docs/HUB-AND-SPOKES.md.
+SKIP_PERMISSIONS="no"
+# ----------------------------------------------------------------------------------------
+
+flags=()
+[ "$SKIP_PERMISSIONS" = "yes" ] && flags+=(--dangerously-skip-permissions)
+for s in "${SPOKES[@]}"; do flags+=(--add-dir "$s"); done
+
+cd "$HUB"
+exec claude "${flags[@]}" "$@"

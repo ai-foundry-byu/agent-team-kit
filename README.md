@@ -50,6 +50,11 @@ agent-team-kit/
 ├── bootstrap.sh                  # a collaborator's one-time local setup (run after cloning)
 ├── worktree-commands.sh          # shell launchers: cs / wt / cockpit / wtls (named, remote-control)
 │
+├── hub/                          # hub-and-spokes: one command center per project, content mounted via --add-dir
+│   ├── install-hub.sh            # one-time: create ~/hubs, install the dispatcher + template, add the `hub` alias
+│   ├── hub                       # dispatcher: hub ls / hub new <name> / hub <name>
+│   └── _template/                # cockpit scaffold copied by `hub new` (launch + CLAUDE.md)
+│
 ├── hooks/                        # the automation
 │   ├── settings.json             # .claude/settings.json wiring that registers the Claude hooks
 │   ├── scripts/                  # Claude Code hooks (coordination + code-quality)
@@ -89,6 +94,7 @@ agent-team-kit/
     ├── WORKTREE-MODE.md          # the worktree way: full comparison + workflow + commands
     ├── TENDING-AGENTS.md         # verbose, remote control, keep-awake (Mac + Windows)
     ├── DRIVING-THE-APP.md        # screenshots, recorded walkthroughs, driving the app as a user
+    ├── HUB-AND-SPOKES.md         # organizing a project across scattered folders: one hub, content as spokes
     ├── HOOKS.md                  # per-hook reference (every hook + the git gates)
     ├── SKILLS.md                 # per-skill reference + how to write your own
     ├── WRITING-CLAUDE-MD.md      # how to write your project's CLAUDE.md (the shared brain)
@@ -192,6 +198,12 @@ It's a spec rather than code because route discovery, the data-state matrix, and
 The crawlers answer *did it break*; the [`ux-critique`](./skills/ux-critique/SKILL.md) skill answers *does it make sense*. It's an LLM critic that walks a flow with an **expectation loop** (predict, act, observe, judge) and files the gaps between expectation and reality through the **same feedback loop**, tagged by `source`, so agent findings land in the same inbox as human reports and hand off to `fix-bug` identically. Each run ends with a self-contained annotated report. Together with the crawlers that's the full agentic QA layer: one finds crashes, the other finds confusion, both file into one inbox.
 
 And the substrate that makes all of it safe to run: [`docs/DISPOSABLE-ENVIRONMENT.md`](./docs/DISPOSABLE-ENVIRONMENT.md), the discipline for *where* agents drive. Its core idea, **fidelity comes from turning stubs off, not from using prod**, lets you exercise the real production code path (real LLM spend, on purpose) against a database you can wipe, while a seatbelt (issuer-abort + prod-refusal guards) keeps the fuzzers off production entirely. This is what turns "let an agent fuzz the app" from a way to email your customers into a free, resettable safety net, and it directly closes the "separate dev from prod" gap below.
+
+## Included: the hub-and-spokes workspace pattern
+
+[`docs/HUB-AND-SPOKES.md`](./docs/HUB-AND-SPOKES.md) is the pattern for the *other* half of working with Claude Code: not how agents avoid colliding in one repo, but **how you organize the folders a project spans and where you launch from.** A real project's files are scattered by ownership and audience — code in a git repo, team docs in a shared drive, official docs on an org drive, private material in an account nobody can revoke — and you can't force them into one folder. Meanwhile Claude ties *both* its memory ("the brain," keyed to the launch dir) and its file access (launch dir + `--add-dir`) to **where you start it.** The pattern makes that decision on purpose: one neutral **hub** per project is the base and the brain; all content — code included — is a **spoke** mounted with `--add-dir`. Never make a content folder the base, so you never fork a second empty brain, and organize spokes by **privacy ring** (private/team/external), fencing sensitive ones out of the default mount and opting them in per run.
+
+The tooling is in [`hub/`](./hub/): `./hub/install-hub.sh` creates the `~/hubs` container and a `hub` dispatcher (`hub new <name>`, `hub <name>`), and each hub scaffolds from a template whose `launch` derives its own base path and ships with skip-permissions **off** (the doc's "honest limits" explains why that's the safe default and what Bash can still reach when you turn it on). It composes with the session launchers: the hub sets *where and over what*; `cs` / `wt` / `cockpit` set *how many and how isolated*.
 
 ## What we haven't fully solved (gaps worth closing)
 
