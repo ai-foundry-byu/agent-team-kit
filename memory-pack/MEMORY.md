@@ -19,3 +19,8 @@ own `MEMORY.md` when adopting the pack (see README.md).
 - [AI status motion is one system](ai-status-motion-one-system.md) — standardize working indicators onto a few shared primitives; color encodes kind of work.
 - [Every mutating button gives feedback](every-mutating-button-gives-feedback.md) — instant press + in-flight spinner (label replaced in place, fixed width, self-disabling).
 - [Arch guards are alarms](arch-guards-as-alarms.md) — ratchet guards fight sprawl; a red guard is an alarm to check cohesion, not a number to game.
+- [Design first, then verify](design-first-then-verify.md) — surface tradeoffs + a quick mockup before building; harden for robustness; verify honestly.
+- [Communicate direct and plain](communicate-direct-and-plain.md) — answer first, short rationale, no throat-clearing; drafted copy stays plain and factual.
+- [No em dashes](no-em-dashes.md) — never in copy, comments, commits, notes, or chat replies; grep before commit/send.
+- [Commit freely, never push](commit-freely-never-push.md) — commit each unit of work without asking; the owner owns the push/deploy trigger; never rewrite pushed history.
+- [Real icons, not emoji](real-icons-not-emoji.md) — use the project's real icon set for UI iconography; never emoji/unicode glyphs.

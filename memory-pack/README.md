@@ -4,7 +4,8 @@ A curated set of hard-won lessons from building real software with parallel Clau
 agents, **generalized** so they seed any project's memory brain. They are the human-and-agent
 working knowledge the rest of the kit's tooling (hooks, skills, specs) assumes but can't
 enforce: git hygiene under parallel agents, verification discipline, environment safety,
-design/refactor discipline, and AI-product UX standards.
+design/refactor discipline, AI-product UX standards, and a few working-style and
+communication conventions (project-neutral, not tied to any one person).
 
 Each file is one memory in Claude Code's memory format: YAML frontmatter (`name`,
 `description`, `metadata.type`) then a short body with **Why** and **How to apply**. They
@@ -31,6 +32,11 @@ doc/hook is the *mechanism*.
 | `ai-status-motion-one-system` | Standardize "working" indicators onto a few shared primitives; color encodes kind of work. |
 | `every-mutating-button-gives-feedback` | Instant press + in-flight spinner (label replaced in place, fixed width, self-disabling). |
 | `arch-guards-as-alarms` | Ratchet guards are alarms to check cohesion, not numbers to game. |
+| `design-first-then-verify` | Surface tradeoffs + a quick mockup before building; harden for robustness; verify honestly. |
+| `communicate-direct-and-plain` | Answer first, short rationale, no throat-clearing; drafted copy stays plain and factual. |
+| `no-em-dashes` | Never use em dashes in copy, comments, commits, notes, or chat replies. |
+| `commit-freely-never-push` | Commit each unit of work without asking; the owner owns the push/deploy trigger. |
+| `real-icons-not-emoji` | Use the project's real icon set for UI iconography; never emoji/unicode glyphs. |
 
 `MEMORY.md` here is the pack's index in the same one-line-per-entry format the memory system uses.
 
