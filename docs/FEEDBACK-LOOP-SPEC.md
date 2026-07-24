@@ -80,8 +80,51 @@ Two wrinkles when the reporter is an agent:
   those findings live in the disposable inbox and **close there**, not via the
   prod-targeted `post-commit` hook (a thin `bug:resolve` wrapper pointed at the
   disposable env). Real user bugs still close the normal commit-bound way on prod.
+  *(When the disposable target is a **local, ephemeral** DB rather than a hosted
+  project, invert this: the finding is discovered locally but the durable ticket
+  is filed to **prod**, and you keep it out of the human queue by `source`
+  instead of by database — see the walk/sweep filer below.)*
 - The "reporter" is a synthetic account, so the close-the-loop **notification is
   noise**, suppress it when `source` is an agent tag.
+
+### The inbox is one store, but two queues
+
+`source` is not just a tag, it is a **queue divider**. A human's report is a
+customer signal; an agent's finding is your own QA output, filed in batches.
+Mixing them buries the former and distorts every "how much feedback did we get"
+count. So the same table gets a queue filter in the admin inbox — *from people*
+/ *from our passes* / *all*, defaulting to people — driven entirely by `source`.
+One store, one triage, one close path, two audiences kept apart.
+
+### The structured QA pass as a first-class source
+
+The richest agent source is the [walks-and-sweeps](./WALKS-AND-SWEEPS-SPEC.md)
+harness, and it is worth calling out because it exercises this schema the way it
+was designed to be used. A walk/sweep finding files with `source: 'walkthrough'`
+and carries the **same context bundle a widget report does**, assembled from the
+run instead of the browser: the screenshot of the exact step or control
+(uploaded to the identical `{id}/screenshot.png` path, so nothing downstream
+special-cases it), the reviewer's expected/observed/why, the route, the
+console-error and failed-request rings captured at that moment (landing in the
+same `context.console` array `fix-bug` reads), a code pointer, a suggested fix,
+and the command that reproduces it. Severity rides along, because it was judged
+against a screenshot during review rather than left for triage to guess.
+
+Two properties make it more than "another way to insert a row":
+
+- **Idempotent filing.** Each finding has a stable id and is fingerprinted as
+  `hash(passId :: findingId)`; the filer skips fingerprints already open, so
+  re-running a pass never duplicates a ticket.
+- **The report joins the inbox back.** The QA report is regenerated with a live
+  lookup of filed findings by fingerprint, so each finding shows a copyable
+  `/fix-bug <id>` and its ticket status inline — reading the report and acting on
+  it are one motion. A resolved ticket reads "fixed, re-run to verify" rather
+  than disappearing, and the same `post-commit` close that resolves the bug also
+  rebuilds the report, so it never goes stale on a fix.
+
+This is the loop's ideal: the widget and the QA harness are two front doors to
+the **same** capture-store-fix-close spine, and the harness proves the spine is
+general enough to serve a machine reporter as cleanly as a human one.
 
 ---
 

@@ -20,6 +20,7 @@ A small set of conventions that keep an agent-driven repo tidy. They are stack-a
 
 - Conventional prefixes (`feat:` / `fix:` / `chore:` / `docs:` / `refactor:` / `test:`), **one concern per commit**.
 - Stage **explicit paths**, never blanket-stage (`git add -A` / `git add .`), the git-safety hook blocks the blanket forms, because on a shared tree they sweep in other agents' work.
+- **The editor GUI has no such guard.** Committing from VS Code (or similar) with *nothing staged* commits *every* changed file, the GUI form of `git commit -a`, and on a shared `main` that swallows siblings' in-flight work. Stage your one file first (the `+` on its row), *then* commit; or disable `git.enableSmartCommit` so the editor never offers "commit all". The manual keyboard path is covered in [`HANDS-ON-EDITS.md`](./HANDS-ON-EDITS.md).
 
 ## File size and boundaries
 

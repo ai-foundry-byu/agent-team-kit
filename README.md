@@ -94,6 +94,7 @@ agent-team-kit/
     ├── WORKTREE-MODE.md          # the worktree way: full comparison + workflow + commands
     ├── TENDING-AGENTS.md         # verbose, remote control, keep-awake (Mac + Windows)
     ├── DRIVING-THE-APP.md        # screenshots, recorded walkthroughs, driving the app as a user
+    ├── HANDS-ON-EDITS.md         # the human keyboard path: element-to-source inspector + safe single-file commit
     ├── HUB-AND-SPOKES.md         # organizing a project across scattered folders: one hub, content as spokes
     ├── HOOKS.md                  # per-hook reference (every hook + the git gates)
     ├── SKILLS.md                 # per-skill reference + how to write your own
@@ -102,7 +103,8 @@ agent-team-kit/
     ├── FEEDBACK-LOOP-SPEC.md     # stack-agnostic build spec: the in-app feedback + bug-fix loop
     ├── SIDEBAR-SPEC.md           # stack-agnostic build spec: the collapsible left nav rail
     ├── CRAWLERS-SPEC.md          # stack-agnostic build spec: the route/action/browser error crawlers
-    ├── DISPOSABLE-ENVIRONMENT.md # where agents drive: disposable project, fidelity, prod safety
+    ├── WALKS-AND-SWEEPS-SPEC.md  # stack-agnostic build spec: judged browser passes + report + ticket filing
+    ├── DISPOSABLE-ENVIRONMENT.md # where agents drive: disposable target, fidelity, graded prod posture
     ├── DESIGN-NOTES.md           # the reasoning behind every choice
     └── ORIGIN-CONVERSATION.md    # a redacted narrative of how the kit came to be
 ```
@@ -193,9 +195,11 @@ It also specifies the header's **version chip + release-notes** plumbing, which 
 
 It's a spec rather than code because route discovery, the data-state matrix, and the "graceful boundary vs. real content" classification are framework-shaped, but it is detailed down to the discovery walk, the classification rules, a hard **safety guard** (the crawlers decode the signed-in session and refuse to fire against anything but a disposable copy of the app), and a throwaway-database recipe, so a coding agent can build it in any stack. It assumes Postgres + Supabase with SvelteKit as the reference and calls out the generic equivalent throughout. Because the crawlers act on a disposable copy, they're safe to run destructively and cheap to run often.
 
-## Included: the UX critic and the disposable environment
+## Included: the UX critic, the walk/sweep harness, and the disposable environment
 
 The crawlers answer *did it break*; the [`ux-critique`](./skills/ux-critique/SKILL.md) skill answers *does it make sense*. It's an LLM critic that walks a flow with an **expectation loop** (predict, act, observe, judge) and files the gaps between expectation and reality through the **same feedback loop**, tagged by `source`, so agent findings land in the same inbox as human reports and hand off to `fix-bug` identically. Each run ends with a self-contained annotated report. Together with the crawlers that's the full agentic QA layer: one finds crashes, the other finds confusion, both file into one inbox.
+
+[`docs/WALKS-AND-SWEEPS-SPEC.md`](./docs/WALKS-AND-SWEEPS-SPEC.md) is the critic made repeatable, catalogued, and wired to the fix pipeline — the higher-fidelity thing the ad-hoc critic grows into. It specifies **two structured browser passes**: a **walk** that travels one journey end to end (a screenshot and a written expectation per step), and a **sweep** that stands on one screen and clicks *every control on it*, classifying each as navigated / overlay / changed / **inert** / error / skipped — where `inert` (a button that does nothing) is the finding invisible to both a journey test and a crawler. Both land in one navigable report whose per-surface verdict is **derived from the evidence, not hand-written**, with an honest "machine-checked vs actually-reviewed" axis. And each finding files as a `bug_reports` row with `source: 'walkthrough'`, carrying the same tidy context package a widget report does (screenshot, route, console/network rings, code pointer, repro command) — idempotent by fingerprint, with the report joining ticket state back in so a `/fix-bug <id>` is one copy away and a close refreshes the report. It is the cleanest proof that the feedback spine serves a machine reporter as well as a human one. The doc also carries the hard-won harness-reliability lessons (re-find by a written tag, don't filter on opacity, reset clears preference state, change-detect by content hash, skip domain-mutations-hiding-behind-nouns).
 
 And the substrate that makes all of it safe to run: [`docs/DISPOSABLE-ENVIRONMENT.md`](./docs/DISPOSABLE-ENVIRONMENT.md), the discipline for *where* agents drive. Its core idea, **fidelity comes from turning stubs off, not from using prod**, lets you exercise the real production code path (real LLM spend, on purpose) against a database you can wipe, while a seatbelt (issuer-abort + prod-refusal guards) keeps the fuzzers off production entirely. This is what turns "let an agent fuzz the app" from a way to email your customers into a free, resettable safety net, and it directly closes the "separate dev from prod" gap below.
 
