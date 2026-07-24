@@ -55,6 +55,11 @@ agent-team-kit/
 │   ├── hub                       # dispatcher: hub ls / hub new <name> / hub <name>
 │   └── _template/                # cockpit scaffold copied by `hub new` (launch + CLAUDE.md)
 │
+├── memory-pack/                  # portable, project-agnostic memories to seed a new project's brain
+│   ├── README.md                 # what the pack is + how to adopt it into a project's memory dir
+│   ├── MEMORY.md                 # the pack's one-line-per-entry index
+│   └── *.md                      # one generalized lesson per file (git hygiene, verification, AI UX, …)
+│
 ├── hooks/                        # the automation
 │   ├── settings.json             # .claude/settings.json wiring that registers the Claude hooks
 │   ├── scripts/                  # Claude Code hooks (coordination + code-quality)
@@ -208,6 +213,10 @@ And the substrate that makes all of it safe to run: [`docs/DISPOSABLE-ENVIRONMEN
 [`docs/HUB-AND-SPOKES.md`](./docs/HUB-AND-SPOKES.md) is the pattern for the *other* half of working with Claude Code: not how agents avoid colliding in one repo, but **how you organize the folders a project spans and where you launch from.** A real project's files are scattered by ownership and audience — code in a git repo, team docs in a shared drive, official docs on an org drive, private material in an account nobody can revoke — and you can't force them into one folder. Meanwhile Claude ties *both* its memory ("the brain," keyed to the launch dir) and its file access (launch dir + `--add-dir`) to **where you start it.** The pattern makes that decision on purpose: one neutral **hub** per project is the base and the brain; all content — code included — is a **spoke** mounted with `--add-dir`. Never make a content folder the base, so you never fork a second empty brain, and organize spokes by **privacy ring** (private/team/external), fencing sensitive ones out of the default mount and opting them in per run.
 
 The tooling is in [`hub/`](./hub/): `./hub/install-hub.sh` creates the `~/hubs` container and a `hub` dispatcher (`hub new <name>`, `hub <name>`), and each hub scaffolds from a template whose `launch` derives its own base path and ships with skip-permissions **off** (the doc's "honest limits" explains why that's the safe default and what Bash can still reach when you turn it on). It composes with the session launchers: the hub sets *where and over what*; `cs` / `wt` / `cockpit` set *how many and how isolated*.
+
+## Included: the portable memory pack
+
+The kit's hooks, skills, and specs are the *mechanisms*; [`memory-pack/`](./memory-pack/) is the *habits* — a curated set of hard-won lessons from building real software with parallel agents, generalized so they seed any project's memory brain. Fifteen one-lesson-per-file memories in Claude Code's memory format (frontmatter + **Why** + **How to apply**), spanning git hygiene under parallel agents (never amend on a shared branch; `git commit -- <path>` takes the working tree, not the index; sequential IDs collide), verification discipline (build before pushing, verify proportional to risk, test the behavior a change endangers not just the new code), environment safety (develop against a disposable copy), design/refactor discipline (subtraction audit on redesign; throwaway gitignored mockups), and AI-product UX standards (every AI surface gets start + live progress + stop; one motion system; every mutating button gives feedback). Several reinforce a kit artifact and link to it — the memory is the habit, the hook/doc is the enforcement. Adoption is a copy into a project's memory dir plus an append to its `MEMORY.md`; the pack's `README.md` has the one-liner. Drop the ones that don't fit, edit the rest to the stack.
 
 ## What we haven't fully solved (gaps worth closing)
 
