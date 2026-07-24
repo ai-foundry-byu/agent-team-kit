@@ -48,6 +48,18 @@ behavior, on a disposable DB, is what you actually want.
   fuzzing crawlers); **stubs-off** when you need real behavior to trust a fix.
 - **Production is a deliberate escalation, never a default** (see below).
 
+**Hosted disposable project vs a local one.** The disposable target can be a
+*hosted* project (its own cloud database) or a **local** stack on your machine
+(a local Supabase, a Docker Postgres). Local is cheaper and more disposable
+still, and once real users exist it is the safer default — dev-against-a-shared-
+hosted-copy still holds god-mode credentials. The one thing local changes: it
+has no inbox anyone triages and a reset wipes it, so a durable *ticket* filed
+from a local run belongs in **prod**, separated from human reports by a `source`
+queue rather than by living in a second database (see
+[walks and sweeps, Part D6](./WALKS-AND-SWEEPS-SPEC.md#d6-a-note-on-where-tickets-live)).
+Everything else in this doc — the two knobs, stubs-off fidelity, the seatbelt —
+applies to a local target unchanged.
+
 ## Why a disposable PROJECT, not just a test account in prod
 
 The obvious shortcut, "I will just sign in as a throwaway account on prod", is
@@ -142,6 +154,60 @@ is improvising:
    a database (the real-behavior launcher, the migration-port command, any
    findings-close wrapper, the report generator) refuses to run if the resolved
    project ref is prod. One `case` statement; it has caught real mistakes.
+
+## Driving production on purpose: the graded posture
+
+The seatbelt above keeps a pass *off* prod. Sometimes you want the opposite: to
+drive **production deliberately**, because only prod has real data shape, live
+integrations, real latency, and realtime — things a disposable copy physically
+cannot produce. "Never touch prod" leaves those untested. The answer is not a
+binary (read-only vs full access) but a **graded posture, enforced at the
+network layer**, which is a stronger guard than issuer-abort because it works
+*while pointed at prod*:
+
+| Posture | What leaves the browser | Use |
+|---|---|---|
+| **open** | everything | disposable target only |
+| **read-only** | nothing but `GET`/`HEAD` after sign-in | the default for prod |
+| **guarded** | writes, except those that reach other people or tenants | prod, on an account you own |
+
+The mechanism is a request interceptor (Playwright `page.route`, or a proxy):
+sign-in is the one permitted write, then the posture narrows and **every
+non-GET request is aborted in the browser before it reaches the server**, with
+each blocked attempt recorded (so "the pass tried to write here" shows up in the
+report). This is enforcement, not a label heuristic you can rename your way past.
+
+**The line `guarded` draws is your data vs other people's, not "is it my
+account."** Owning the account does not make a broadcast, an LMS push, or an
+impersonation safe — those escape the account. So `guarded` blocks a small,
+readable **escape list**, each entry with a stated reason:
+
+- **admin / cross-tenant writes** (broadcasts, org/school config, deletions,
+  support replies) — they act on every tenant, not just you;
+- **impersonation / view-as** — they attribute your writes to a real user;
+- **LMS release / pushback** — writes grades into a real course (unblock only
+  once the LMS target is genuinely ring-fenced);
+- **invites and support replies** — real email to a real person;
+- **payments** — real money.
+
+Everything else — creating, editing, grading, curving on your own account,
+spending your own credits — goes through, which is exactly the fidelity you came
+to prod for. Admin *reads* (a prompt inspector, a health page, a log view) are
+GETs, so they work in every posture; it is only the admin *writes* that escape.
+Keep the escape list unit-tested in both directions: a rule that stops blocking
+is how a broadcast reaches every user, and a rule that over-blocks quietly guts
+the fidelity. Guard tooling that can touch prod like you guard app code.
+
+Two corollaries specific to prod:
+
+- **Fuzzers (sweeps, the crawlers) never get `guarded`; they are refused on prod
+  outright.** A sweep clicks every control on a screen, and its skip heuristic
+  gets caught missing. Only a scripted **walk** — a fixed, navigational path —
+  is safe to point at prod, and even then read-only by default.
+- **Prod screenshots hold real PII.** A screenshot of a real class carries
+  student names and scores (an education record); a finding filed from a prod
+  pass omits its image unless the surface holds no real people. Prefer a
+  dedicated prod QA account whose classes are your own.
 
 ## Migrations: authored once, against prod; the disposable replays
 

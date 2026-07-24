@@ -85,6 +85,17 @@ Hard-won, from running the [crawlers](./CRAWLERS-SPEC.md) and the [ux-critique](
 - **A backgrounded tab freezes `requestAnimationFrame` and `ResizeObserver`.** When the automated tab is not the foreground tab, the browser throttles it: rAF and RO callbacks never fire, so anything that lays out or animates on them looks broken or empty. Pump a frame (take a screenshot, which forces a paint) before reading the DOM, and do not trust an "empty" measurement from a hidden tab.
 - **Verify by reading URLs and the DOM in tool results, not by eyeballing pixels.** A screenshot tells you it *looks* right; the URL trail and DOM tell you it *is* right. Assert on those.
 
+### Extra gotchas from building a click-every-control sweep
+
+A sweep (click every control on a screen, one at a time, from a fresh baseline — see [`WALKS-AND-SWEEPS-SPEC.md`](./WALKS-AND-SWEEPS-SPEC.md)) stresses the driver in ways a single scripted flow doesn't, and each of these was a real false finding before it was a rule:
+
+- **Re-find a control by a tag you wrote, not by its label.** To click control *n* again after resetting the screen, stamp each control with an index attribute during enumeration (`data-sweep-n="k"`) and select on that. Re-deriving a selector from the visible label silently loses every icon-only button and mis-hits duplicate labels.
+- **Don't filter enumeration on `opacity`.** A control that is transparent until you hover its row (a table row's actions, a switcher) is a real control — and a real click hovers it on the way in. Filtering it out makes it enumerate at baseline and then vanish on re-find, which the tool can only report as a phantom error.
+- **Reset means clear preference state, not just reload.** Some controls persist UI prefs (a collapsed nav, a remembered tab) in `localStorage` or a non-auth cookie, so one early click quietly changes the screen every later action is measured against. Clear client storage + non-session cookies before each reload, keeping only auth.
+- **Detect "changed" with a content hash, not a text length.** A sort control reorders rows without changing a single character count; comparing lengths reads that as "nothing happened." Hash the visible text (and count nodes/overlays) instead.
+- **A domain mutation can hide behind a noun.** A keyword skip-list catches verb labels (delete, release, send) but not a rubric chip reading "Good 20" that *scores the paper*. Keep a second list of your domain's scoring/confirm vocabularies. Record every skip with a reason so the report is honest about what it didn't click.
+- **Measure real latency from Navigation Timing, not wall-clock.** Wall-clock per step includes your own settle waits; `performance.getEntriesByType('navigation')[0].responseEnd - startTime` is the number that means "the server + network cost this much."
+
 ---
 
 These pair naturally: the puppet-strings harness drives a flow, the screenshot/recording capability captures it, the reliability gotchas above keep the driving honest, and the port + verify-by-URL disciplines keep it all reliable across many concurrent agents.
