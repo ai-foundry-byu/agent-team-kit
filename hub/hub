@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+#
+# hub — dispatcher for your ~/hubs cockpits.  See docs/HUB-AND-SPOKES.md.
+#
+# A "hub" is a neutral command center: it holds config + a launch script and anchors ONE
+# memory brain (keyed to its path). Your real content lives in spokes elsewhere, mounted
+# by the hub's launch script via --add-dir. Launch only through this dispatcher so the base
+# — and therefore the brain — is always the hub, never a content folder.
+#
+#   hub                    list your hubs
+#   hub ls                 list your hubs
+#   hub <name> [args...]   launch that hub  (execs ~/hubs/<name>/launch, args passed through)
+#   hub new <name>         scaffold a new hub from ~/hubs/_template
+#
+# Override the container location with HUBS_DIR (defaults to ~/hubs).
+#
+set -euo pipefail
+
+HUBS="${HUBS_DIR:-$HOME/hubs}"
+cmd="${1:-ls}"
+
+case "$cmd" in
+  ls|"")
+    echo "Hubs in $HUBS:"
+    shopt -s nullglob
+    for d in "$HUBS"/*/; do
+      name="$(basename "$d")"
+      [ "$name" = "_template" ] && continue
+      echo "  $name"
+    done
+    ;;
+  new)
+    name="${2:?usage: hub new <name>}"
+    dest="$HUBS/$name"
+    [ -e "$dest" ] && { echo "hub '$name' already exists at $dest" >&2; exit 1; }
+    [ -d "$HUBS/_template" ] || { echo "no template at $HUBS/_template (run install-hub.sh)" >&2; exit 1; }
+    cp -R "$HUBS/_template" "$dest"
+    chmod +x "$dest/launch" 2>/dev/null || true
+    echo "Created $dest from _template."
+    echo "Next: edit $dest/launch (set the SPOKES) and $dest/CLAUDE.md, then: hub $name"
+    ;;
+  *)
+    dest="$HUBS/$cmd"
+    [ -d "$dest" ]        || { echo "no hub '$cmd' in $HUBS  (try: hub ls)" >&2; exit 1; }
+    [ -x "$dest/launch" ] || { echo "$dest/launch is missing or not executable" >&2; exit 1; }
+    shift
+    exec "$dest/launch" "$@"
+    ;;
+esac
