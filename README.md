@@ -107,6 +107,7 @@ agent-team-kit/
     ├── CONVENTIONS.md            # transferable repo conventions
     ├── FEEDBACK-LOOP-SPEC.md     # stack-agnostic build spec: the in-app feedback + bug-fix loop
     ├── SIDEBAR-SPEC.md           # stack-agnostic build spec: the collapsible left nav rail
+    ├── VIEW-AS-SPEC.md           # stack-agnostic build spec: view the app as any role or person, exit from the rail
     ├── CRAWLERS-SPEC.md          # stack-agnostic build spec: the route/action/browser error crawlers
     ├── WALKS-AND-SWEEPS-SPEC.md  # stack-agnostic build spec: judged browser passes + report + ticket filing
     ├── DISPOSABLE-ENVIRONMENT.md # where agents drive: disposable target, fidelity, graded prod posture
@@ -195,6 +196,8 @@ It's a spec rather than code because the right implementation depends on your st
 It also specifies the header's **version chip + release-notes** plumbing, which couples to the bundled `push` skill: a single version source, a typed `releases` data model, and a `/releases` surface the chip opens. Build those three pieces and `push` keeps them current on every ship. So the sidebar spec and the push skill interlock.
 
 ## Included: the error crawlers
+
+[`docs/VIEW-AS-SPEC.md`](./docs/VIEW-AS-SPEC.md) is a stack-agnostic spec for letting an admin see the app exactly as another user sees it: the same rail, screens, redirects, and API answers, with one "Viewing as" marker in the rail and an Exit. It separates **view as a role** (swap the permission set, keep your own data; cheap and safe) from **view as a person** (swap the whole identity for support; signed session, a JWT minted as the target, read-only by default, audited). The core rule is one server-side resolver of the effective viewer that every page, layout, and API guard calls, over a single capability table, so a new persona is one row and the preview is faithful everywhere.
 
 [`docs/CRAWLERS-SPEC.md`](./docs/CRAWLERS-SPEC.md) is a high-fidelity, stack-agnostic spec for three backend crawlers that exercise a whole app to find errors before a user (or a demo audience) does: a **route crawler** that hits every page in a matrix of data states (valid, missing, malformed, foreign-owned, mismatched-nesting) and flags 404s, 500s, and cross-tenant leaks; an **action crawler** that POSTs empty and junk payloads at every form action and asserts it fails gracefully, never with a 500; and a **browser monkey** that drives a real browser to catch the client-side errors the other two can't see. Each finds a different class of error, and together they're a fast "is anything broken" pass you can run before every demo.
 
