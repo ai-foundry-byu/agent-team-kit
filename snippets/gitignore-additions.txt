@@ -25,4 +25,9 @@
 # or muddy code search. Disposable: once a design is built into the app, the
 # mockup's job is done.
 .mockups/
+
+# Per-feature specs, punch lists and check sheets written by /spec and
+# /build-spec. Disposable: the walk criteria get a tracked home (see the spec
+# skill, Step 4), the rest is done once the feature ships.
+.specs/
 .scratch/

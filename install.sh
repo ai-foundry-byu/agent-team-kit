@@ -37,6 +37,7 @@ mkdir -p "$TARGET/docs"
 cp "$KIT/docs/FEEDBACK-LOOP-SPEC.md" "$TARGET/docs/FEEDBACK-LOOP-SPEC.md"
 cp "$KIT/docs/SIDEBAR-SPEC.md" "$TARGET/docs/SIDEBAR-SPEC.md"
 cp "$KIT/docs/DRIVING-THE-APP.md" "$TARGET/docs/DRIVING-THE-APP.md"
+cp "$KIT/docs/MOCKUP-SHELLS-SPEC.md" "$TARGET/docs/MOCKUP-SHELLS-SPEC.md"
 echo "[ok] hook scripts, skills, bootstrap.sh, and the build specs in place"
 
 # 2. .claude/settings.json (the Claude Code hook wiring).
@@ -65,6 +66,11 @@ fi
 if ! grep -qxF '.mockups/' "$GI"; then
   printf '\n# agent-team-kit: high-fidelity design mockups (gitignored; out of code search + commits)\n.mockups/\n' >> "$GI"
   echo "[ok] added .mockups/ to .gitignore"
+fi
+# 3c. .gitignore, ignore per-feature specs written by /spec (disposable, like mockups).
+if ! grep -qxF '.specs/' "$GI"; then
+  printf '\n# agent-team-kit: per-feature specs + punch lists from /spec (gitignored; disposable)\n.specs/\n' >> "$GI"
+  echo "[ok] added .specs/ to .gitignore"
 fi
 
 # 4. CLAUDE.md, the concurrent-agents rules (append-only, guarded).

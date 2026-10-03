@@ -1,6 +1,6 @@
 # Skills reference
 
-The kit bundles five skills (under `skills/`) as worked examples. Four come from the real project they were built in, so their *specifics* are project-bound (table names, file paths, the deploy host) while the *patterns* generalize; `merge-worktree` is kit-native (worktree-mode integration). They are here to show the kinds of skill an AI-native team should write for itself. Treat the project-specific paths inside them as placeholders to adapt.
+The kit bundles nine skills (under `skills/`) as worked examples. Most come from the real project they were built in, so their *specifics* are project-bound (table names, file paths, the deploy host) while the *patterns* generalize; `merge-worktree` is kit-native (worktree-mode integration), and `spec`, `build-spec` and `mockup` have been generalized to drop in as-is, taking project commands from your CLAUDE.md. They are here to show the kinds of skill an AI-native team should write for itself. Treat the project-specific paths inside them as placeholders to adapt.
 
 ## What a skill is, and why it matters for a team
 
@@ -63,6 +63,26 @@ Below, each example, what it does, why the pattern is valuable, and what is proj
 **Why the pattern matters.** Some operations have a strict safe sequence and a tempting unsafe shortcut. A skill encodes the guards (clean-tree check, never blind-resolve a conflict, never push) so the operation is reliable every time. It also illustrates the launchers-vs-operations rule: starting a session is a shell command, but an operation you run mid-session with judgment is a skill.
 
 **Kit-native** (not from the origin project); it pairs with worktree mode, see [`WORKTREE-MODE.md`](./WORKTREE-MODE.md).
+
+---
+
+## `spec` and `build-spec`, put a human gate between exploring and building
+
+**What they do.** `spec` turns an exploration (a conversation, a mockup) into `.specs/<slug>/spec.md` plus a punch list, and stops for approval. `build-spec` works that punch list item by item, committing each, and is done only when every acceptance criterion is closed by its verifier. Each criterion is tagged `walk` (checked in a browser: by default a hand-driven check sheet of clickable URLs), `unit` (a test) or `structure` (an architecture guard or grep).
+
+**Why the pattern matters.** The decisions that make a feature good are made while exploring and die at compaction. Writing them down, with the rejected options and why, stops the build from re-litigating them. The tags give the spec teeth: a markdown assertion has none, but "closed by this test" or "Expect: X is NOT in the list" does. And the approval gate puts the cheapest iteration (editing a spec) before the expensive one (rewriting a diff). The general lesson: **for anything bigger than a one-line fix, make the agent show you the plan in a form you can edit, and define done as evidence, not as a diff that looks right.**
+
+**Project-specific to swap.** Nothing in the skills; fill the template's "Constraints in this repo" from your CLAUDE.md, and name your typecheck and test commands there. Walk mode needs a walk harness ([`WALKS-AND-SWEEPS-SPEC.md`](./WALKS-AND-SWEEPS-SPEC.md)); without one, the check sheet covers it.
+
+---
+
+## `mockup`, make design iteration fast and faithful
+
+**What it does.** Produces a throwaway, high-fidelity HTML mockup in `.mockups/` and hands back a clickable link. Its best path edits a frozen snapshot of the real page (see [`MOCKUP-SHELLS-SPEC.md`](./MOCKUP-SHELLS-SPEC.md)), so only the idea is new and the surrounding chrome is exactly the app. Without the freezer, it writes a standalone page in the app's own tokens and vocabulary.
+
+**Why the pattern matters.** A user can judge a picture far faster than a paragraph, and a mockup that looks subtly unlike the app gets judged on the wrong things. The skill also carries the hard-won editing rules (never splice frozen HTML by line range, never loop a replace-first, look at the render before handing it over) because the worst mockup failures are invisible in the diff.
+
+**Project-specific to swap.** Your surface list and recipes, once you build the freezer.
 
 ---
 

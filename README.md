@@ -83,7 +83,10 @@ agent-team-kit/
 │   ├── fix-bug/                  # load an in-app bug report from the DB and fix it
 │   ├── ux-critique/              # agentic UX critic: walk a flow, file findings as bugs
 │   ├── userflow-map/             # maintain a data-driven UI state-machine map
-│   └── merge-worktree/           # cockpit-side: integrate a worker branch into main
+│   ├── merge-worktree/           # cockpit-side: integrate a worker branch into main
+│   ├── spec/                     # freeze an exploration into a tagged, approvable spec + punch list
+│   ├── build-spec/               # work an approved spec's punch list; close each criterion by its verifier
+│   └── mockup/                   # high-fidelity throwaway mockups, edited from a frozen real surface
 │
 ├── snippets/                     # fragments you paste into a project
 │   ├── gitignore-additions.txt   # .gitignore lines to share settings + skills
@@ -107,6 +110,7 @@ agent-team-kit/
     ├── CONVENTIONS.md            # transferable repo conventions
     ├── FEEDBACK-LOOP-SPEC.md     # stack-agnostic build spec: the in-app feedback + bug-fix loop
     ├── SIDEBAR-SPEC.md           # stack-agnostic build spec: the collapsible left nav rail
+    ├── MOCKUP-SHELLS-SPEC.md     # stack-agnostic build spec: freeze a real page into an editable mockup shell
     ├── IMPERSONATION-SPEC.md     # stack-agnostic build spec: view any page as any user (or role), exit from the rail
     ├── CRAWLERS-SPEC.md          # stack-agnostic build spec: the route/action/browser error crawlers
     ├── WALKS-AND-SWEEPS-SPEC.md  # stack-agnostic build spec: judged browser passes + report + ticket filing
@@ -194,6 +198,16 @@ It's a spec rather than code because the right implementation depends on your st
 [`docs/SIDEBAR-SPEC.md`](./docs/SIDEBAR-SPEC.md) is a high-fidelity, stack-agnostic spec for a Claude-model collapsible left nav rail: an expanded panel that collapses to an icon-only rail where **every icon holds its exact vertical position** across the toggle (the detail most implementations get subtly wrong). It specifies the pinning technique (a frozen icon column + fixed row heights + section-headers-become-hairline-dividers), the full anatomy (header, scrollable body, an optional progress stepper, footer account row), drag-to-resize, persistence, collapsed tooltips, the mobile off-canvas drawer, and a build checklist.
 
 It also specifies the header's **version chip + release-notes** plumbing, which couples to the bundled `push` skill: a single version source, a typed `releases` data model, and a `/releases` surface the chip opens. Build those three pieces and `push` keeps them current on every ship. So the sidebar spec and the push skill interlock.
+
+## Included: spec, build-spec, and mockup (the feature loop)
+
+Three skills that carry a feature from idea to verified code, with one human gate in the middle.
+
+- [`mockup`](./skills/mockup/SKILL.md) puts a high-fidelity, throwaway design in front of you fast. Its best path edits a **shell**, a frozen snapshot of the real rendered page (actual DOM, stylesheet, fonts and copy) in one editable file, so the chrome around an idea is the app rather than a drawing of it. [`docs/MOCKUP-SHELLS-SPEC.md`](./docs/MOCKUP-SHELLS-SPEC.md) specifies the freezer for any stack; without it the skill falls back to a standalone page.
+- [`spec`](./skills/spec/SKILL.md) turns the exploration (conversation plus mockup) into `.specs/<slug>/spec.md` and a punch list, then **stops for approval**. It keeps the decisions already made and the options rejected, so the build does not reopen them, and it tags every acceptance criterion with what will check it: `walk` (a browser), `unit` (a test) or `structure` (a guard or grep). A criterion that cannot be tagged is too vague to build from. Visibility and permission criteria are always written in both directions.
+- [`build-spec`](./skills/build-spec/SKILL.md) works the punch list, one committed item at a time, and closes each criterion by its verifier: tests for `unit` and `structure`, and by default a short **check sheet** of clickable URLs the human drives for `walk` (or a walk runner, if the project has one and asks). It never rewords a criterion to make it pass. State lives in `punchlist.md`, so a fresh session or a worktree agent resumes cold.
+
+Editing a spec by hand is the cheapest iteration available, and it only exists before code does. That gate is the reason these are two skills.
 
 ## Included: impersonation ("View as")
 
