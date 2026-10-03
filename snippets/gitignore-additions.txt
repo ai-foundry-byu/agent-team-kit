@@ -12,6 +12,7 @@
 .claude/*
 !.claude/settings.json
 !.claude/skills/
+!.claude/team-memory/
 
 # .claude/settings.local.json stays ignored by the rule above. Put personal,
 # machine-specific, or permission config there; it merges over the shared

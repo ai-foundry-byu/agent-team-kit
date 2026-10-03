@@ -49,6 +49,16 @@ A hook returns its verdict by exit code: **exit 0** allows (and is silent), **ex
 
 ---
 
+## `team-memory.mjs`, SessionStart: load the team's shared memory
+
+Claude Code memory is per-machine. This hook makes a tracked `.claude/team-memory/` folder (same format: one memory per file plus a `MEMORY.md` index) part of every teammate's memory:
+
+- **Links each team file** into the session's memory folder under the same name, so `[[name]]` links resolve and an edit lands in the tracked file. It finds the folder from the session's `transcript_path` (the memory folder sits beside it), falling back to encoding the launch path. Where symlinks are unavailable it copies, marked, and refreshes the copies each session.
+- **Writes the team index lines** into the personal `MEMORY.md` between `<!-- team-memory:start -->` and `<!-- team-memory:end -->`, right under the heading, so a long personal index can never push them out of the loaded part. Nothing outside the markers is touched.
+- **Removes stale links** to team files that were deleted.
+- **A personal file of the same name wins** and is reported, never overwritten (that is what `/share-memory` deletes after promoting).
+- Silent when the project has no team folder; never fails a session.
+
 ## `bash-guard.mjs` + `bash-guard.sh`, PreToolUse: the gatekeeper on every shell command
 
 This is the largest hook and does four jobs. It runs before every Bash tool call, on the raw command string, and is the one place an agent can be *stopped* rather than nudged.

@@ -1,6 +1,6 @@
 # Skills reference
 
-The kit bundles nine skills (under `skills/`) as worked examples. Most come from the real project they were built in, so their *specifics* are project-bound (table names, file paths, the deploy host) while the *patterns* generalize; `merge-worktree` is kit-native (worktree-mode integration), and `spec`, `build-spec` and `mockup` have been generalized to drop in as-is, taking project commands from your CLAUDE.md. They are here to show the kinds of skill an AI-native team should write for itself. Treat the project-specific paths inside them as placeholders to adapt.
+The kit bundles ten skills (under `skills/`) as worked examples. Most come from the real project they were built in, so their *specifics* are project-bound (table names, file paths, the deploy host) while the *patterns* generalize; `merge-worktree` is kit-native (worktree-mode integration), and `spec`, `build-spec`, `mockup` and `share-memory` have been generalized to drop in as-is, taking project commands from your CLAUDE.md. They are here to show the kinds of skill an AI-native team should write for itself. Treat the project-specific paths inside them as placeholders to adapt.
 
 ## What a skill is, and why it matters for a team
 
@@ -83,6 +83,16 @@ Below, each example, what it does, why the pattern is valuable, and what is proj
 **Why the pattern matters.** A user can judge a picture far faster than a paragraph, and a mockup that looks subtly unlike the app gets judged on the wrong things. The skill also carries the hard-won editing rules (never splice frozen HTML by line range, never loop a replace-first, look at the render before handing it over) because the worst mockup failures are invisible in the diff.
 
 **Project-specific to swap.** Your surface list and recipes, once you build the freezer.
+
+---
+
+## `share-memory`, turn one person's lessons into the team's
+
+**What it does.** Promotes a personal Claude Code memory into the project's tracked `.claude/team-memory/` folder, which the `team-memory` SessionStart hook loads into every teammate's session. It picks (or surveys and proposes), scrubs credentials, customer data and names, generalizes the memory while keeping its concrete reason, moves it, deletes the personal copy so the two cannot drift, and commits.
+
+**Why the pattern matters.** Memory is the one piece of a Claude Code setup that stays on one machine, so in a team of two each person's agents keep re-learning what the other's already know. Promoting deliberately, one scrubbed memory at a time, shares the lesson without leaking the personal folder's names, accounts and production details.
+
+**Project-specific to swap.** Nothing.
 
 ---
 

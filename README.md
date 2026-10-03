@@ -58,6 +58,7 @@ agent-team-kit/
 ├── memory-pack/                  # portable, project-agnostic memories to seed a new project's brain
 │   ├── README.md                 # what the pack is + how to adopt it into a project's memory dir
 │   ├── MEMORY.md                 # the pack's one-line-per-entry index
+│   ├── TEAM-MEMORY-README.md     # becomes .claude/team-memory/README.md when install.sh seeds a project
 │   └── *.md                      # one generalized lesson per file (git hygiene, verification, AI UX, …)
 │
 ├── hooks/                        # the automation
@@ -67,6 +68,7 @@ agent-team-kit/
 │   │   ├── bash-guard.mjs        # PreToolUse: git-safety + commit-sweep guard + schema lock + ad-hoc psql DDL block
 │   │   ├── bash-guard.sh         # zero-spawn shell pre-filter in front of the guard
 │   │   ├── session-release.mjs   # SessionEnd: free this session's lock + port
+│   │   ├── team-memory.mjs       # SessionStart: load the tracked .claude/team-memory/ into this session's memory
 │   │   ├── agent-coord.mjs       # shared helpers (coordination dir, worktree detection)
 │   │   ├── file-size-budget.mjs  # file-size ratchet: config + helpers
 │   │   ├── import-boundaries.mjs # import-boundary guard: config + helper
@@ -86,6 +88,7 @@ agent-team-kit/
 │   ├── merge-worktree/           # cockpit-side: integrate a worker branch into main
 │   ├── spec/                     # freeze an exploration into a tagged, approvable spec + punch list
 │   ├── build-spec/               # work an approved spec's punch list; close each criterion by its verifier
+│   ├── share-memory/             # promote a personal memory into the shared team memory, scrubbed
 │   └── mockup/                   # high-fidelity throwaway mockups, edited from a frozen real surface
 │
 ├── snippets/                     # fragments you paste into a project
@@ -170,7 +173,7 @@ The hooks stop the mechanical collisions. This is the human model that wraps the
 - **Let one session be the cockpit.** Keep one Claude session in the main checkout for the human-gated acts: the pull-rebase, any merges, and the single push. Worker agents produce; the cockpit integrates, on a clean tree, when workers are idle.
 - **Announce migrations, own deploys.** The schema lock is local to one machine and can't see your teammate, so a migration is a "heads up, pushing schema" message between humans; after pulling their changes, check what is actually applied (`supabase migration list`) before adding your own. And decide up front who pushes to production, so you never double-deploy or race a release. Pushing is always a deliberate human act here, never an agent's.
 - **Review each other's output.** Agents produce a lot of plausible code fast. Even with no pull-request gate, build the habit of reading the diff of what the other's agents committed (a quick `/code-review` on recent commits). Speed without a second set of eyes is how subtle wrong-but-plausible code ships.
-- **Share knowledge through `CLAUDE.md`, not memory.** `CLAUDE.md` is tracked and steers both your agents identically. Personal Claude memory is per-machine and does *not* travel, so anything the team needs to know goes in `CLAUDE.md`.
+- **Share knowledge through tracked files, never personal memory.** Personal Claude memory is per-machine and does *not* travel. Standing rules and how the project works go in `CLAUDE.md`, which every agent reads. Lessons learned along the way (a gotcha, an incident, a "never do X because Y") go in `.claude/team-memory/`, which every teammate's session loads as memory at start; when your agent learns something the other person needs, promote it with `/share-memory`.
 - **Name every session.** With several agents going, launch each with a name, the kit's `wt` / `cockpit` / `cs` launchers set the session `--name` for you. It shows in the `/resume` picker and the terminal title, so you can find a past conversation and tell a dozen windows apart. An unnamed session is a generic path and an indistinguishable tab. (More in [`docs/WORKTREE-MODE.md`](./docs/WORKTREE-MODE.md#name-every-session).)
 
 The loop, in one line: claim a lane, pull-rebase, work with your agents, integrate through the cockpit, review, and keep schema and deploys coordinated by hand.
@@ -236,6 +239,8 @@ The tooling is in [`hub/`](./hub/): `./hub/install-hub.sh` creates the `~/hubs` 
 ## Included: the portable memory pack
 
 The kit's hooks, skills, and specs are the *mechanisms*; [`memory-pack/`](./memory-pack/) is the *habits* — a curated set of hard-won lessons from building real software with parallel agents, generalized so they seed any project's memory brain. Twenty one-lesson-per-file memories in Claude Code's memory format (frontmatter + **Why** + **How to apply**), spanning git hygiene under parallel agents (never amend on a shared branch; `git commit -- <path>` takes the working tree, not the index; sequential IDs collide), verification discipline (build before pushing, verify proportional to risk, test the behavior a change endangers not just the new code), environment safety (develop against a disposable copy), design/refactor discipline (subtraction audit on redesign; throwaway gitignored mockups), AI-product UX standards (every AI surface gets start + live progress + stop; one motion system; every mutating button gives feedback), and a few project-neutral working-style and communication conventions (design-first; direct and plain; no em dashes; commit freely but let the owner push; real icons not emoji). Several reinforce a kit artifact and link to it — the memory is the habit, the hook/doc is the enforcement. Adoption is a copy into a project's memory dir plus an append to its `MEMORY.md`; the pack's `README.md` has the one-liner. Drop the ones that don't fit, edit the rest to the stack.
+
+**Team memory: the pack becomes the start of a shared brain.** Memory is the one part of a Claude Code setup that is truly local: it lives under `~/.claude/projects/<launch path>/memory/` and never travels. For a team of two building one thing, that means every lesson one person's agents learn is invisible to the other's. So `install.sh` seeds the pack into a tracked `.claude/team-memory/` folder, and a SessionStart hook ([`team-memory.mjs`](./hooks/scripts/team-memory.mjs)) loads that folder into every teammate's session: each file is linked into their memory folder under its own name, and the team index lines are written at the top of their `MEMORY.md` between marker comments, leaving their personal entries alone. A collaborator clones, runs `bootstrap.sh`, starts a session, and their agents recall the same project lessons yours do; new ones arrive with `git pull`. The [`share-memory`](./skills/share-memory/SKILL.md) skill is the way in: it takes a personal memory, scrubs credentials, customer data and people's names, generalizes it without losing its concrete reason, moves it into the team folder and commits it. Deliberate promotion rather than syncing the whole folder, because a personal memory folder names people, accounts and production details.
 
 ## What we haven't fully solved (gaps worth closing)
 

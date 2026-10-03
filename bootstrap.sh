@@ -20,6 +20,10 @@ echo "[ok] hook scripts marked executable"
 # 3. Sanity checks (warn, don't fail).
 command -v node >/dev/null 2>&1 && echo "[ok] node on PATH" || echo "[!] node not found, the Claude Code hooks need it"
 [ -f .claude/settings.json ] && echo "[ok] .claude/settings.json present (hooks wired)" || echo "[!] .claude/settings.json missing, hooks won't load"
+if [ -d .claude/team-memory ]; then
+  n=$(ls .claude/team-memory/*.md 2>/dev/null | grep -vc -e '/MEMORY.md$' -e '/README.md$')
+  echo "[ok] team memory: $n shared memories, loaded into your sessions at start"
+fi
 
 cat <<'EOF'
 

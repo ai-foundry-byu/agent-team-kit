@@ -42,23 +42,26 @@ doc/hook is the *mechanism*.
 
 ## How to adopt into a project
 
-Claude Code memories don't live in your repo — they live under
-`~/.claude/projects/<encoded-launch-path>/memory/`, keyed to where you launch Claude
-(the `<encoded-launch-path>` is your project's absolute path with `/` → `-`). To seed a
-project with this pack:
+**With the kit (recommended):** `install.sh` seeds this pack into the project's
+tracked `.claude/team-memory/` folder, and the `team-memory` SessionStart hook
+loads it into every teammate's session. Nothing to copy by hand, and anything
+the team learns later is added with the `/share-memory` skill. Trim the seeded
+files to fit the project and commit.
+
+**Personal only (no team folder):** Claude Code memories live under
+`~/.claude/projects/<encoded-launch-path>/memory/`, keyed to where you launch
+Claude. The encoding turns every non-alphanumeric character of the absolute path
+into `-`. From the project you want to seed:
 
 ```sh
-# from the project you want to seed (so $PWD is its launch dir)
-DEST="$HOME/.claude/projects/$(pwd | sed 's#/#-#g')/memory"
+DEST="$HOME/.claude/projects/$(pwd | sed 's#[^A-Za-z0-9]#-#g')/memory"
 mkdir -p "$DEST"
 cp /path/to/agent-team-kit/memory-pack/*.md "$DEST"/
-# then merge the pack's index lines into the project's MEMORY.md (create it if absent)
-cat /path/to/agent-team-kit/memory-pack/MEMORY.md >> "$DEST/MEMORY.md"
+rm -f "$DEST/README.md" "$DEST/TEAM-MEMORY-README.md"
+# MEMORY.md was just overwritten if one existed: restore yours and append the
+# pack's lines instead if so.
 ```
 
-Then trim: delete any memory that doesn't fit the project, and edit the rest to match its
-stack. These are a **starting brain**, not gospel — the point is to not re-learn the same
-lessons from zero on every new codebase.
-
-> Note: `MEMORY.md` in a real memory dir is the index (one line per memory). If the project
-> already has one, append the pack's lines rather than overwriting, then de-dupe.
+Then trim: delete any memory that doesn't fit the project, and edit the rest to
+match its stack. These are a **starting brain**, not gospel; the point is to not
+re-learn the same lessons from zero on every new codebase.

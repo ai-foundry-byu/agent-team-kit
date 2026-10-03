@@ -73,6 +73,25 @@ if ! grep -qxF '.specs/' "$GI"; then
   echo "[ok] added .specs/ to .gitignore"
 fi
 
+# 3d. Team memory: seed .claude/team-memory/ from the portable memory pack, once.
+#     It is tracked (the !.claude/skills/ style re-include below), and the
+#     team-memory SessionStart hook loads it into every teammate's session.
+TM="$TARGET/.claude/team-memory"
+if [ -d "$TM" ]; then
+  echo "[ok] .claude/team-memory/ exists, left as is (compare with $KIT/memory-pack/ by hand)"
+else
+  mkdir -p "$TM"
+  cp "$KIT"/memory-pack/*.md "$TM"/
+  rm -f "$TM/README.md"
+  cp "$KIT/memory-pack/TEAM-MEMORY-README.md" "$TM/README.md" 2>/dev/null || true
+  rm -f "$TM/TEAM-MEMORY-README.md"
+  echo "[ok] seeded .claude/team-memory/ from the memory pack (trim what does not fit)"
+fi
+if ! grep -qxF '!.claude/team-memory/' "$GI"; then
+  printf '!.claude/team-memory/\n' >> "$GI"
+  echo "[ok] .gitignore re-includes .claude/team-memory/"
+fi
+
 # 4. CLAUDE.md, the concurrent-agents rules (append-only, guarded).
 CM="$TARGET/CLAUDE.md"
 if [ -f "$CM" ] && grep -qF 'Concurrent agents on' "$CM"; then
