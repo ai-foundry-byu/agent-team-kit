@@ -27,6 +27,14 @@ A small set of conventions that keep an agent-driven repo tidy. They are stack-a
 - A file crossing the size budget is an **alarm to check cohesion**, not a number to shrink under by deleting comments. Split along a real seam, or exempt a genuinely-single-concern file with a reason.
 - Reach for the restricted/privileged capability (e.g. an RLS-bypassing client) only when the safe path genuinely cannot do the work, and leave a call-site comment saying why. The import-boundary guard makes that a deliberate, visible choice.
 
+## Release flags
+
+- **Decide how a feature reaches people in its spec**, not at build or ship time: release flag, permanent kill switch, rehearse on staging, or no flag, with the seam, whose flags apply, the off path and the rollout. See [`RELEASE-FLAGS-SPEC.md`](./RELEASE-FLAGS-SPEC.md) and the spec template's Release section.
+- **A flag controls who the code runs for, not what it does.** Deploy-time changes rehearse on staging; per-request changes do only if their first audience could do irreversible harm outside the team ([`RELEASE-PIPELINE.md`](./RELEASE-PIPELINE.md), section 5).
+- **Branch once, at a seam**, as a plain if/else on the flag; off is byte-identical to before; never pass the flag's value around.
+- **Env vars are for what stays** (kill switches, stubs, config). Rollouts are release flags; entitlements get their own list.
+- **Removing a flag is part of finishing the feature**, and starts by reading what every environment actually sets and who calls the code without passing the flag.
+
 ## Verification
 
 - **Verify proportional to risk.** Behavior and layout changes earn a real run-through; a one-line copy change earns a check. Match the effort to the blast radius.

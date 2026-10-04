@@ -49,6 +49,14 @@ Pay special attention to features that depend on the OPPOSITE of what you just
 added. (Added a guard that blocks empties? The feature that legitimately empties
 is the one at risk.)
 
+**Flagged code has two lives; judge both.** If a changed symbol sits behind a
+release flag, or takes a flag as a parameter, the feature list above runs twice:
+once with the flag on, once off. Most users are on the OFF path until the
+rollout finishes, so a change that is only right with the flag on is a
+regression for nearly everyone. Check the callers that leave an optional flag
+parameter out: they run off in production even when the flag reads "on for
+everyone" (`docs/RELEASE-FLAGS-SPEC.md`, R43).
+
 ### 3. Lock it with a behavior test
 For the change AND for each at-risk feature, make sure a test asserts the
 **user-facing behavior**, not the implementation. The tell that a test is the
@@ -63,6 +71,10 @@ Pick the cheapest layer that still exercises the real path:
 - **E2E** (`tests/*.spec.ts`, Playwright) for a full UI→server→DB journey, tagged
   `@critical` if it's a must-never-break path. Slower; reserve for the few flows
   that justify it.
+
+For flagged code, the tests cover both states: the feature with the flag on,
+and the unchanged behaviour with it off (forced through the env override, not by
+editing a shared environment's audience).
 
 Add the missing test(s). If a behavior genuinely can't be tested cheaply, say so
 explicitly rather than skipping silently.

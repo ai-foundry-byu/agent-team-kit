@@ -25,5 +25,8 @@ and test accounts do nothing about them.
   and health checks do not mark a fenced host as broken.
 - The one sanctioned exception (e.g. staging bug reports forwarded into prod's queue) is a
   narrow endpoint with a shared secret, a team-membership check and a rate limit.
-- A feature flag cannot replace this: a team member trying a flagged feature in prod is
-  often also a real user with real recipients. See [[staging-is-a-twin-not-a-demo]].
+- A feature flag does not replace this. A flag controls WHO the code runs for, not WHAT it
+  does or where its effects land, and a team member trying a flagged feature in prod is often
+  also a real user with real recipients. Whether a change needs the fenced twin depends on
+  whose data its first audience reaches, see [[flag-or-staging-is-whose-data]] and
+  [[staging-is-a-twin-not-a-demo]].

@@ -114,6 +114,12 @@ Call it `$ID`.
    the responsible code and apply the fix per the repo's normal workflow. Fix the
    actual failure you reproduced, not the user's guessed cause if verification
    showed it was elsewhere.
+   - **Check the reporter's flag state first.** If the surface is behind a release
+     flag, the reporter saw the on path or the off path depending on their
+     audience (and, on shared or background surfaces, the resource owner's).
+     Reproduce in THAT state with the env override, fix it there, and make sure
+     the fix does not change the other state unless it should. A bug reported
+     from a pilot user is often in code most users are not running yet.
 
 8. **Close the loop in the commit.** Closing is not a separate step you have to
    remember, it is bound to the commit by a `post-commit` git hook

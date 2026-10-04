@@ -74,9 +74,13 @@ turns.
 7. **Push.** `git push origin main --tags`. Confirm the push succeeded
    (`git status` shows up to date with origin/main).
 
-8. **Report.** Tell the user: the version shipped, the themes in the notes,
-   how many commits were published, and that Vercel is now building. Link the
-   Releases tab path (`/releases`) so they can eyeball the copy.
+8. **Report.** If the project uses release flags, paste the flags report (which
+   flags are dark, partial, on for everyone, and ready to remove): shipping code
+   releases nothing behind a flag, so this is what tells the owner what users
+   actually got, and which flags are owed a removal.
+   Then tell the user the version shipped, the themes in the notes, how many
+   commits were published, and that Vercel is now building. Link the Releases
+   tab path (`/releases`) so they can eyeball the copy.
 
 ## Failure handling
 

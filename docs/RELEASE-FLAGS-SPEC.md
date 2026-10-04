@@ -47,6 +47,20 @@ A small team takes most of it and leaves some:
 
 **R1. Release flags and operational flags are different kinds, and only release flags live in the table.** An operational kill switch must work when the database does not, so it stays an environment variable. Do not migrate existing env flags into this system.
 
+**R39. Env vars are for what is meant to stay.** A long, growing list of env flags is usually five kinds mixed together:
+
+| Kind | Example | Belongs in |
+|---|---|---|
+| Kill switch | `GRADER_RETRIES=0` turns a sweep off | env |
+| Test stub | `LLM_STUB=1` returns canned output | env |
+| Configuration | `REAPER_INTERVAL_MS=180000` | env |
+| Parked experiment | built, measured, never turned on | decide: delete it, or make it a release flag with an owner |
+| Finished rollout | default-on for months, nobody turns it off | remove it (the release is over) |
+
+Only the first three belong in env. Audit the list for the last two when it passes a dozen or so entries.
+
+**R40. Release flags and entitlements share the mechanism, never the registry.** An entitlement (a feature that depends on a plan, a license or a contract) is permanent and driven by billing; a release flag is temporary and driven by a rollout. Evaluate both with the same machinery if you like, but keep separate lists, so the cap, the cleanup task and `/remove-flag` never touch something a customer paid for.
+
 ---
 
 ## 4. Audiences
@@ -168,7 +182,15 @@ Every release flag is two code paths, one of which nobody runs once the feature 
 
 ## 11. Removal and permanent kill switches
 
-**R35. Removing a release flag removes its kill switch.** Some features should keep one: anything that writes to the outside world or costs money per use. The cleanup task asks. If yes, convert the check into an operational environment flag (section 3) and document it with the others; then remove the release flag as usual.
+**R35. Removing a release flag removes its kill switch, so decide whether one should stay.** Removing it means turning the feature off later costs a revert plus a release. Keep a permanent kill switch where the feature can **fail without erroring** (it produces wrong output, so nothing triggers its fallback) and its output feeds something that matters (a grade, a payment, a message), or where it writes to the outside world. The cleanup task asks. If yes, convert the check into an operational environment flag (section 3) and document it with the others; then remove the release flag as usual.
+
+**R41. Read what each environment actually sets before removing.** Read the deployed configuration of every environment (production, staging, CI, the disposable one), not the docs: docs drift from what is deployed. A flag forced off somewhere is a reason to stop and ask.
+
+**R42. Remove by substitution, then delete only what became unreachable.** Replace each check with its current value (`true`), let the code simplify, and delete only branches that can no longer run. Do not change function signatures in the same commit.
+
+**R43. Find every caller of an optional flag parameter first.** The trap: a function takes `{ withFeature?: boolean }`, and leaving it out means off. A caller that never passed it is running the OFF path in production right now, while the flag reads "on for everyone". Deleting the off branch silently changes that caller. List every call site and what it passes before deleting anything.
+
+**R44. Check what the protecting tests cover, and what turns the flag off on purpose.** A snapshot test of the main path says nothing about secondary callers. And look for tests or harness configuration that set the flag off deliberately (an end-to-end config that disables a feature for isolation): that flag has quietly become test infrastructure, and removing it changes what those tests exercise.
 
 ---
 
@@ -178,20 +200,33 @@ Every release flag is two code paths, one of which nobody runs once the feature 
 
 ---
 
-## 13. Staging and what a flag cannot do
+## 13. Which tool for which risk
 
 **R37. Staging copies the audiences.** The staging refresh copies `feature_flags` as reference data, so staging releases what production releases, and never copies the history. A change made on staging lasts until the next refresh.
 
-**R38. Know what a flag cannot make safe, and keep the staging twin for it.** Two kinds of change reach everyone regardless of any flag:
+**R38. Pick the tool by the risk: who, where, and what.** A release flag controls WHO the code runs for. It does not control WHAT the code does, and turning it off undoes nothing already written. The staging twin, with its egress fence, controls WHERE the effects land. So:
 
-- **Writes to the outside world by someone who is also a real user.** The team often includes people with real customers: a flag set to Team still lets a teammate post to a real course, email a real student, charge a real card. Rehearse those on a fenced staging twin ([`STAGING-TWIN-SPEC.md`](./STAGING-TWIN-SPEC.md)) before the flag opens on production.
-- **Build, infrastructure and migrations.** A dependency upgrade, a container change, a worker change or a schema change reaches every request on deploy. Rehearse the build on staging and promote that exact build ([`RELEASE-PIPELINE.md`](./RELEASE-PIPELINE.md)).
+- **Deploy-time changes reach everyone before any flag is checked.** Migrations, containers, workers, dependency upgrades, and shared code edited on the way in. Rehearse the build on staging and promote that exact build ([`RELEASE-PIPELINE.md`](./RELEASE-PIPELINE.md)).
+- **For per-request changes, ask three questions about the FIRST audience:** what is the worst case, whose data does it land on, and can it be undone? If it lands on the team's own data, or it is reversible, a flag is enough. If it is irreversible and lands outside the team (a real student's inbox, a live gradebook, a payment), rehearse on the fenced twin first ([`STAGING-TWIN-SPEC.md`](./STAGING-TWIN-SPEC.md)). "Writes to an outside system" is not by itself a staging rule: it depends on whose data the first audience reaches. A team member who is also a real teacher makes Team an audience that reaches real students.
+- **Pure refactors (renames, moves, extractions) get tests, not flags.** There is nothing to release.
 
-Flags are for releasing features. Staging is for rehearsing builds and outward writes. Neither replaces the other.
+The spec template's Release section asks these questions at spec time ([`../skills/spec/TEMPLATE.md`](../skills/spec/TEMPLATE.md)).
 
 ---
 
-## 14. Build checklist
+## 14. Writing flagged code
+
+**R45. Branch once, at a seam.** Put the check in one place (a load, an action, a component boundary) and let everything below it be ordinary code. A flag scattered through a function cannot be reasoned about, tested in both states, or removed cleanly. If the code has no seam where the feature can be switched, creating one is the first item of the build.
+
+**R46. Additive features return null or empty when off.** The off path then needs no change at all, which is what makes "off is byte-identical" cheap to keep true and easy to test.
+
+**R47. Keep every check a plain `if (flag) ... else ...` on the flag itself.** Do not pass the flag's value around in other variables or derived booleans (`const showX = flag && hasY`): each copy is a place removal can miss, and removal by substitution (R42) depends on seeing the flag at every decision.
+
+**R48. Data must be readable by both paths.** A flag cannot undo a write. Anything the on path writes, the off path must still read correctly, because the flag can be turned off at any moment with that data already there. This is the same constraint expand-contract puts on migrations (R36).
+
+---
+
+## 15. Build checklist
 
 1. The registry: typed keys, name, description, owner, created date, and a registry test that every entry is complete (R6).
 2. The pure evaluator and override parser, unit-tested for every audience rule, both directions (R2, R3, R5, R11, R14).
@@ -209,7 +244,7 @@ Flags are for releasing features. Staging is for rehearsing builds and outward w
 14. The staging copy lists the audience table as reference data and the history as never-copy (R37).
 15. A probe flag with its own tiny page, for checking targeting by hand (Lesson L5).
 
-## 15. Test checklist
+## 16. Test checklist
 
 **Evaluation**
 - No row: off for everyone, including the team.
@@ -243,9 +278,15 @@ Flags are for releasing features. Staging is for rehearsing builds and outward w
 - Reaching Everyone files one task; reaching it again with the task open files none.
 - An N+1th flag fails the cap test; a flag named nowhere on the server fails its test.
 
+**Removal** (run before `/remove-flag` deletes anything)
+- Every environment's deployed value for `FLAG_<KEY>` is known, from the deployed config, not the docs.
+- Every caller of any optional flag parameter is listed with what it passes; none relies on "left out means off".
+- No test or harness config sets the flag off on purpose; if one does, it is rewritten first.
+- With the flag on, data written by the on path still reads correctly with the flag off (R48), checked before the flag ever reached Everyone.
+
 ---
 
-## 16. Lessons from the build
+## 17. Lessons from the build
 
 - **L1. Flagging a shipped feature retracts it.** The first real flag went on a feature that had already shipped to every user that morning, which the person adding the flag believed was still unreleased. A flag with no row is Off, so the deploy would have taken the feature away from everyone. Before choosing a flag's first audience, check whether the feature is already live and whether anyone has used it (a count of its rows is enough), and **set the audience before the deploy lands**, so there is no window where nobody has it.
 - **L2. Release notes and help text follow the flag.** The release notes had already announced the feature and the help center described it. Narrowing the audience meant removing both in the same release, and noting in the commit where to restore the help text when the flag reaches Everyone.

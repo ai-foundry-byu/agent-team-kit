@@ -43,6 +43,11 @@ doc/hook is the *mechanism*.
 | `fence-outward-writes-at-one-chokepoint` | One fenced-fetch helper with allowlists, and an arch test that fails on any bypass. |
 | `check-before-flagging-a-shipped-feature` | A new flag retracts a live feature; check, set the audience before deploy, move notes and help. |
 | `check-a-secrets-shape-never-print-it` | Diagnose credentials by length, charset and a harmless probe; never print the value. |
+| `decide-the-release-at-spec-time` | Kind, key, seam, whose flags, off path and rollout are decided in the spec; a flagged build reports "shipped dark". |
+| `flag-or-staging-is-whose-data` | A flag controls who, not what; rehearse deploy-time changes, and per-request ones only if the first audience could harm outsiders irreversibly. |
+| `branch-once-at-a-seam` | One flag check at one seam, a plain if/else, off returns null, data readable by both paths. |
+| `env-flags-are-for-what-stays` | Env holds kill switches, stubs and config; rollouts are release flags; entitlements get their own list. |
+| `removing-a-flag-check-silent-callers` | Before deleting the off branch, read deployed config and find callers that leave an optional flag param out. |
 
 `MEMORY.md` here is the pack's index in the same one-line-per-entry format the memory system uses.
 

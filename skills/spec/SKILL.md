@@ -45,6 +45,15 @@ Use `TEMPLATE.md` next to this file. The sections that carry the weight:
   error behaviour, what happens with the feature flag off, what the thing is
   called. This is the section that stops the build from re-litigating what you
   settled at 11pm.
+- **Release.** Required, never left blank: the kind (release flag, permanent
+  kill switch, rehearse on staging, or no flag) and why, the flag key, the one
+  seam the check goes in, whose flags apply (viewer or resource owner), what the
+  off path looks like, and the rollout order. Decide it here because the answer
+  shapes the code (where the seam is, what off returns) and the criteria (a
+  release flag brings three standard ones, see the template). If the
+  exploration never said how this reaches people, put it in Open questions with
+  a recommended answer rather than inventing one. The "which tool for which
+  risk" note in the template is the test to apply.
 - **Considered and rejected, with the reason.** Without it, the build proposes
   the rejected option back to the user within a day.
 - **Acceptance criteria, each tagged `walk` / `unit` / `structure`.**
@@ -126,6 +135,8 @@ iteration in the loop, and it only exists before code does.
 Say plainly:
 
 - what you assumed, and what you left open;
+- how it will be released (the Release section in one line), so a wrong
+  call is caught while it is still a sentence;
 - which criteria are `unit` or `structure`, and therefore can never be checked
   in a browser;
 - the two ways `/build-spec` can verify the `walk` criteria: **tests plus a

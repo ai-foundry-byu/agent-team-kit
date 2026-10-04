@@ -73,6 +73,15 @@ find later.
 2. Read `punchlist.md` and take the first unchecked item.
 3. Start a dev server only if you need a browser, and only on the port assigned
    to this session, never the human's.
+4. **Read the spec's Release section and build to it.** If it is a release
+   flag: register the key first and put the check at the named seam (a punch
+   list item of its own if the seam does not exist yet); build and look at the
+   feature with the flag FORCED ON locally (the env override, e.g.
+   `FLAG_<KEY>=1` on your dev server), never by changing a real environment's
+   audience; and keep the off path byte-identical. Setting an audience in a
+   shared environment is a release, not part of the build. If the Release
+   section is missing or says "decide later", stop and ask: the answer changes
+   the code.
 
 ## The loop, per item
 
@@ -87,7 +96,10 @@ find later.
 3. **Add the item's `walk` criteria to `check.md`** (or fill in its walk steps,
    in walk mode). The criterion text is frozen: it is what the user approved. If
    a criterion cannot be checked as stated, that is a finding for the user, not a
-   licence to reword it.
+   licence to reword it. For a flagged feature, the sheet carries the flag-off
+   entries too (a persona without the flag sees nothing new), each as its own
+   numbered line, and says how to get each state (override on and off, or the
+   admin page in a disposable environment).
 4. **Run the targeted tests** for what you touched: the co-located tests and any
    suite you know shares the code.
 5. **Look at it in the browser** when the item is visual, and compare it with the
@@ -144,6 +156,12 @@ what is stuck, with screenshots.
 - Report honestly: criteria closed and by which verifier, criteria left open and
   why, anything you assumed. If a criterion turned out to be uncheckable as
   written, say so plainly. It is the most useful thing you can hand back.
+- **Say how it reaches people.** For a release flag, the report says **"shipped
+  dark"** in those words: built and verified, off for everyone until its
+  audience is set, followed by the release step (who turns it on first, where,
+  and how). Without this line an agent reports "done" for a feature nobody can
+  see, and the user believes it is live. For "rehearse on staging", name the
+  stage and promote steps instead.
 
 Then stop. Releasing is a separate, deliberate step (`/push` or the project's
 release skill), and only when asked.

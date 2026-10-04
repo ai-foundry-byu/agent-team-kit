@@ -30,3 +30,8 @@ own `MEMORY.md` when adopting the pack (see README.md).
 - [Fence outward writes at one chokepoint](fence-outward-writes-at-one-chokepoint.md) — one fenced-fetch helper + allowlists + an arch test that fails on any bypass; fenced is not failed.
 - [Check before flagging a shipped feature](check-before-flagging-a-shipped-feature.md) — a new flag with no row retracts a live feature; set the audience before deploy; move notes and help with it.
 - [Check a secret's shape, never print it](check-a-secrets-shape-never-print-it.md) — length/charset/trailing char + a harmless provider probe; copied secrets are often truncated or carry a period.
+- [Decide the release at spec time](decide-the-release-at-spec-time.md) — kind, key, seam, whose flags, off path, rollout in the spec; three standard criteria; report "shipped dark".
+- [Flag or staging is whose data](flag-or-staging-is-whose-data.md) — a flag controls WHO, not WHAT; deploy-time changes rehearse; per-request only if the first audience could harm outsiders irreversibly.
+- [Branch once at a seam](branch-once-at-a-seam.md) — one check, plain if/else, off returns null, never pass the flag around, data readable by both paths.
+- [Env flags are for what stays](env-flags-are-for-what-stays.md) — kill switches, stubs, config stay in env; rollouts are release flags; entitlements get their own list.
+- [Removing a flag: check silent callers](removing-a-flag-check-silent-callers.md) — read deployed config; a caller that leaves an optional flag param out runs OFF in prod today.

@@ -15,7 +15,8 @@ When to use which:
 - **`/ship`** (road A): the newest work on `main`, including anything a
   release flag keeps dark.
 - **`/stage` then `/promote`** (road B): the BUILD needed rehearsing. A
-  migration, infrastructure, an outward write (LMS, email), a prompt change.
+  deploy-time change (migration, infrastructure, dependencies), or a change
+  whose first audience could do irreversible harm outside the team.
 
 **Invoking this skill is the authorization.** The one question it may ask is
 in step 2, and only when `main` has moved past the staged commit.
@@ -59,8 +60,9 @@ git log --oneline "$STAGED..origin/main"    # stays behind
 - **`main` has not moved**: the staged commit is the tip. Run `/ship` from its
   migrations step; it is the same release.
 - **`main` has moved**: ask ONE question with the second list shown. Promote
-  the staged build alone (recommended when that list holds a migration, an
-  outward write, or anything not behind a flag), or ship all of `main` with
+  the staged build alone (recommended when that list holds a deploy-time
+  change, or anything not behind a flag that could do irreversible harm
+  outside the team), or ship all of `main` with
   `/ship`.
 
 ## 3. Build the release in a temporary worktree

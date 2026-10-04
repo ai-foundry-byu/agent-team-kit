@@ -11,10 +11,13 @@ slice of prod data, and an egress fence so nothing it does reaches a real
 person outside the team. It serves two jobs:
 
 - **A demo surface**: show the product on real-shaped data without prod risk.
-- **A rehearsal surface**: try a BUILD before customers get it. A migration,
-  infrastructure, and anything that writes outward (LMS, email, payments),
-  which is the one thing a release flag in prod cannot make safe. A feature
-  that only needs people to look at it belongs behind a release flag in prod.
+- **A rehearsal surface**: try a BUILD before customers get it. Deploy-time
+  changes (a migration, infrastructure, dependencies), and per-request changes
+  whose first audience could do irreversible harm outside the team (a real
+  inbox, a live gradebook, a payment). A feature that only needs people to
+  look at it, or whose first audience only touches team data, belongs behind a
+  release flag in prod instead. The test is in `docs/RELEASE-PIPELINE.md`,
+  section 5.
 
 Every staging deploy is **deliberate**: nothing reaches staging except this
 skill or a hand-pushed `-rc` tag, so a demo never changes under the presenter.

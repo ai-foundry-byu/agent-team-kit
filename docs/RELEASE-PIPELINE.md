@@ -102,15 +102,28 @@ rebase conflict, CI red, a smoke failure).
 **Road A, straight to prod** (`/ship`). Small, safe or urgent: a copy fix, a
 bug fix with a test, anything a flag keeps dark.
 
-**Road B, staging first** (`/stage`, people try it, `/promote`). Use it when
-the BUILD itself is what needs rehearsing:
+**Road B, staging first** (`/stage`, people try it, `/promote`). Use it for
+two kinds of change:
 
-- a migration, especially one that changes data or constraints;
-- anything that writes outward: LMS grade or comment pushes, email,
-  payments, webhooks to someone else's system;
-- grading or other AI prompt changes, where you want to look at real output;
-- infrastructure: the Dockerfile, the worker, the entrypoint, the host config;
-- anything a pilot user should try before customers do.
+- **Deploy-time changes**, which reach everyone the moment they deploy, before
+  any flag is checked: a migration (especially one that changes data or
+  constraints), infrastructure (the container, the worker, the entrypoint, the
+  host config), dependency upgrades, and shared code edited on the way in.
+- **Per-request changes whose first audience could do irreversible harm
+  outside the team.** Ask three questions about the FIRST audience: what is
+  the worst case, whose data does it land on, and can it be undone? Team data
+  or reversible: a flag on road A is enough. Irreversible and outside the
+  team (a real student's inbox, a live gradebook, a payment, someone else's
+  system): rehearse on the fenced twin first. "It writes to an outside system"
+  is not by itself the rule; whose data the first audience reaches is. A team
+  member who is also a real teacher makes even "Team" reach real students.
+
+Also good on road B: AI prompt changes where you want to read real output
+first, and anything a pilot user should try before customers do.
+
+The spec template asks this at spec time, in its Release section
+([`../skills/spec/TEMPLATE.md`](../skills/spec/TEMPLATE.md)), so the road is
+known before the code is written.
 
 `/ship` carries an **advisory road check**. Before tagging, it reads the commit
 prod is serving and the commit staging is serving (both from a status
@@ -220,9 +233,11 @@ which road a change needs:
 - **A feature that only needs people to look at it** ships on road A, behind a
   flag set to the team. Nothing waits on staging, so staged work never blocks
   an urgent fix.
-- **Staging keeps the jobs a flag cannot do**: writes to the outside world
-  (a team member is often also a real user with real customers, so "on for the
-  team" in prod still writes to real people), migrations, and infrastructure.
+- **Staging keeps the jobs a flag cannot do.** A flag controls WHO the code
+  runs for, not WHAT it does, and turning it off undoes nothing already
+  written. So deploy-time changes (migrations, infrastructure, dependencies)
+  and per-request changes that could do irreversible harm to people outside
+  the team at the first audience still rehearse on the fenced twin (section 5).
 
 Migrations are not flagged. A flagged feature's migration follows
 expand-contract (add, dual-write, backfill, switch reads behind the flag, drop
