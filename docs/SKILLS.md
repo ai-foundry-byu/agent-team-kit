@@ -96,6 +96,26 @@ Below, each example, what it does, why the pattern is valuable, and what is proj
 
 ---
 
+## `stage` and `promote`, two roads to production with one honest rule
+
+**What they do.** `stage` puts a release candidate on the staging twin: commit your own work, sync, apply pending migrations to the STAGING database through a wrapper that refuses the prod project, run the parity checker and stop on drift, tag `v<next>-rcN`, push `main` and the tag atomically, then watch the deploy from a backgrounded shell loop and smoke-test the deployed commit. `promote` ships to production exactly the commit staging is serving: it reads that SHA from the twin's status endpoint, refuses if it is not on `main`, if prod is not its ancestor, if CI was not green on it, or if a destructive migration is in range, then builds the release in a temporary worktree and merges it back so the tag stays an ancestor of `main`.
+
+**Why the pattern matters.** A ship skill that tags HEAD quietly carries every commit made after the rehearsal into production. Splitting "put it where people can try it" from "send what they tried" makes the rehearsal mean something, and keeps the fast road (ship straight from `main`) for the small, safe work it suits. The general lesson: **when a step exists to verify something, the next step must consume exactly what was verified.** See [`RELEASE-PIPELINE.md`](./RELEASE-PIPELINE.md) and [`STAGING-TWIN-SPEC.md`](./STAGING-TWIN-SPEC.md).
+
+**Project-specific to swap.** The staging and prod URLs, the status endpoint's commit field, your staging-only migrate wrapper, your parity checker, the CI job names, and the version-bump files.
+
+---
+
+## `remove-flag`, make finishing a release part of the release
+
+**What it does.** Takes a release flag out of the code once its feature is on for everyone: checks the flags report says ready, asks whether the feature needs a permanent kill switch (then it becomes an operational env flag instead), deletes the registry entry so the compiler names every call site, keeps the "on" branch and deletes the "off" branch at each, leaves the table row until the change has deployed, closes the cleanup task, and commits once.
+
+**Why the pattern matters.** Flags are cheap to add and expensive to forget; a codebase with dozens of half-removed flags has two code paths everywhere and nobody knows which one runs. A cap test, a cleanup task filed when a flag reaches everyone, and a one-command removal turn "we should clean that up" into a routine. See [`RELEASE-FLAGS-SPEC.md`](./RELEASE-FLAGS-SPEC.md).
+
+**Project-specific to swap.** The registry path, the server gate helpers' names, and the bug-queue close path.
+
+---
+
 ## Writing your own
 
 A skill is just `skills/<name>/SKILL.md` with frontmatter:

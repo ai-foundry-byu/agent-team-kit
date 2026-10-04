@@ -12,6 +12,8 @@ Stack-agnostic. It assumes a Postgres/Supabase-shaped project with a couple of
 provider integrations (an LLM, an email sender, maybe an LMS), and calls out the
 generic equivalent for anything specific.
 
+> **A sibling, not a replacement.** This doc is where *agents* drive: a seeded or local copy, stubs on for cheap sweeps, safe to wipe. Once real users exist you usually also want a place where *humans* rehearse a build on real-shaped data with real behavior before it ships. That is the staging twin, [`STAGING-TWIN-SPEC.md`](./STAGING-TWIN-SPEC.md): prod's build and config, a slice of the team's own data, and an egress fence. Keep both; they answer different questions. How builds reach each one is in [`RELEASE-PIPELINE.md`](./RELEASE-PIPELINE.md).
+
 ## The one insight: two independent knobs
 
 People conflate "demo vs prod" with "fake vs real." They are **two separate

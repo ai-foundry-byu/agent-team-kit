@@ -38,6 +38,10 @@ cp "$KIT/docs/FEEDBACK-LOOP-SPEC.md" "$TARGET/docs/FEEDBACK-LOOP-SPEC.md"
 cp "$KIT/docs/SIDEBAR-SPEC.md" "$TARGET/docs/SIDEBAR-SPEC.md"
 cp "$KIT/docs/DRIVING-THE-APP.md" "$TARGET/docs/DRIVING-THE-APP.md"
 cp "$KIT/docs/MOCKUP-SHELLS-SPEC.md" "$TARGET/docs/MOCKUP-SHELLS-SPEC.md"
+# The release pipeline: the stage / promote / remove-flag skills point at these.
+cp "$KIT/docs/RELEASE-PIPELINE.md" "$TARGET/docs/RELEASE-PIPELINE.md"
+cp "$KIT/docs/STAGING-TWIN-SPEC.md" "$TARGET/docs/STAGING-TWIN-SPEC.md"
+cp "$KIT/docs/RELEASE-FLAGS-SPEC.md" "$TARGET/docs/RELEASE-FLAGS-SPEC.md"
 echo "[ok] hook scripts, skills, bootstrap.sh, and the build specs in place"
 
 # 2. .claude/settings.json (the Claude Code hook wiring).

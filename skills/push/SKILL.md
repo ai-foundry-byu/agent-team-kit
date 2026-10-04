@@ -11,6 +11,8 @@ skill does that, then pushes. Invocation of this skill counts as the explicit
 "push now" authorization required by CLAUDE.md; it does NOT carry over to later
 turns.
 
+> **Two deploy triggers.** This skill assumes the host deploys on every push to `main`. If several agents or a collaborator share `main`, prefer a pipeline that deploys on TAGS instead (a push runs CI only, an `-rc` tag deploys staging, a final tag deploys prod); see [`docs/RELEASE-PIPELINE.md`](../../docs/RELEASE-PIPELINE.md) and the `stage` and `promote` skills. In that setup this skill's steps are the same, but the last one pushes `main` and the version tag together with `git push --atomic`.
+
 ## Inputs
 
 - Optional explicit target version in the user's request (e.g. "going to

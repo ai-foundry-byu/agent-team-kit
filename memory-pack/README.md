@@ -37,6 +37,12 @@ doc/hook is the *mechanism*.
 | `no-em-dashes` | Never use em dashes in copy, comments, commits, notes, or chat replies. |
 | `commit-freely-never-push` | Commit each unit of work without asking; the owner owns the push/deploy trigger. |
 | `real-icons-not-emoji` | Use the project's real icon set for UI iconography; never emoji/unicode glyphs. |
+| `deploy-is-not-release` | A push runs CI only; a tag deploys (rc to staging, final to prod); a flag releases to an audience. |
+| `promote-the-staged-commit` | After a staging rehearsal, ship exactly the staged commit, read from the twin itself. |
+| `staging-is-a-twin-not-a-demo` | Same build and config as prod, differences named and enforced by a parity checker, the team's data slice. |
+| `fence-outward-writes-at-one-chokepoint` | One fenced-fetch helper with allowlists, and an arch test that fails on any bypass. |
+| `check-before-flagging-a-shipped-feature` | A new flag retracts a live feature; check, set the audience before deploy, move notes and help. |
+| `check-a-secrets-shape-never-print-it` | Diagnose credentials by length, charset and a harmless probe; never print the value. |
 
 `MEMORY.md` here is the pack's index in the same one-line-per-entry format the memory system uses.
 

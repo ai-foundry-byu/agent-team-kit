@@ -81,6 +81,9 @@ agent-team-kit/
 │
 ├── skills/                       # Claude Code skills, real worked examples to adapt
 │   ├── push/                     # cut a release + push, guarded, with customer release notes
+│   ├── stage/                    # put an rc build on the staging twin: migrate, parity check, tag, watch, smoke
+│   ├── promote/                  # ship exactly the commit staging serves, not HEAD
+│   ├── remove-flag/              # take a release flag out of the code once it is on for everyone
 │   ├── regression-check/         # impact analysis + behavior tests on shared-code changes
 │   ├── fix-bug/                  # load an in-app bug report from the DB and fix it
 │   ├── ux-critique/              # agentic UX critic: walk a flow, file findings as bugs
@@ -118,6 +121,9 @@ agent-team-kit/
     ├── CRAWLERS-SPEC.md          # stack-agnostic build spec: the route/action/browser error crawlers
     ├── WALKS-AND-SWEEPS-SPEC.md  # stack-agnostic build spec: judged browser passes + report + ticket filing
     ├── DISPOSABLE-ENVIRONMENT.md # where agents drive: disposable target, fidelity, graded prod posture
+    ├── RELEASE-PIPELINE.md       # deploy is not release: push = CI, rc tag = staging, tag = prod, two roads
+    ├── STAGING-TWIN-SPEC.md      # stack-agnostic build spec: staging as prod's fenced twin with the team's data
+    ├── RELEASE-FLAGS-SPEC.md     # stack-agnostic build spec: per-audience release flags, ship dark, release by click
     ├── DESIGN-NOTES.md           # the reasoning behind every choice
     └── ORIGIN-CONVERSATION.md    # a redacted narrative of how the kit came to be
 ```
@@ -241,6 +247,14 @@ The tooling is in [`hub/`](./hub/): `./hub/install-hub.sh` creates the `~/hubs` 
 The kit's hooks, skills, and specs are the *mechanisms*; [`memory-pack/`](./memory-pack/) is the *habits* — a curated set of hard-won lessons from building real software with parallel agents, generalized so they seed any project's memory brain. Twenty one-lesson-per-file memories in Claude Code's memory format (frontmatter + **Why** + **How to apply**), spanning git hygiene under parallel agents (never amend on a shared branch; `git commit -- <path>` takes the working tree, not the index; sequential IDs collide), verification discipline (build before pushing, verify proportional to risk, test the behavior a change endangers not just the new code), environment safety (develop against a disposable copy), design/refactor discipline (subtraction audit on redesign; throwaway gitignored mockups), AI-product UX standards (every AI surface gets start + live progress + stop; one motion system; every mutating button gives feedback), and a few project-neutral working-style and communication conventions (design-first; direct and plain; no em dashes; commit freely but let the owner push; real icons not emoji). Several reinforce a kit artifact and link to it — the memory is the habit, the hook/doc is the enforcement. Adoption is a copy into a project's memory dir plus an append to its `MEMORY.md`; the pack's `README.md` has the one-liner. Drop the ones that don't fit, edit the rest to the stack.
 
 **Team memory: the pack becomes the start of a shared brain.** Memory is the one part of a Claude Code setup that is truly local: it lives under `~/.claude/projects/<launch path>/memory/` and never travels. For a team of two building one thing, that means every lesson one person's agents learn is invisible to the other's. So `install.sh` seeds the pack into a tracked `.claude/team-memory/` folder, and a SessionStart hook ([`team-memory.mjs`](./hooks/scripts/team-memory.mjs)) loads that folder into every teammate's session: each file is linked into their memory folder under its own name, and the team index lines are written at the top of their `MEMORY.md` between marker comments, leaving their personal entries alone. A collaborator clones, runs `bootstrap.sh`, starts a session, and their agents recall the same project lessons yours do; new ones arrive with `git pull`. The [`share-memory`](./skills/share-memory/SKILL.md) skill is the way in: it takes a personal memory, scrubs credentials, customer data and people's names, generalizes it without losing its concrete reason, moves it into the team folder and commits it. Deliberate promotion rather than syncing the whole folder, because a personal memory folder names people, accounts and production details.
+
+## Included: the release pipeline, the staging twin, and release flags
+
+The kit's original deploy model was "a push to main deploys", which is exactly wrong once several agents and a collaborator share `main`: half-finished work goes live, so the owner hoards the push and finished work sits on one laptop. [`docs/RELEASE-PIPELINE.md`](./docs/RELEASE-PIPELINE.md) separates the three moments. **A push saves and runs CI, and deploys nothing. A tag deploys** (`-rc` to staging, a final tag to production). **A flag releases** a feature to an audience. It lays out the two roads from a change to users (straight to prod for small, safe, urgent work; stage then promote for migrations, outward writes and anything a pilot user should try) and the one rule that makes the second road honest: promote the exact commit staging served, not whatever `main` holds now. The [`stage`](./skills/stage/SKILL.md), [`promote`](./skills/promote/SKILL.md) and [`push`](./skills/push/SKILL.md) skills encode it.
+
+[`docs/STAGING-TWIN-SPEC.md`](./docs/STAGING-TWIN-SPEC.md) is what makes staging worth opening: the same build and configuration as production, every difference named on a short allowlist that a parity checker enforces, filled with a **slice** of production (the team's own accounts and what they own, everyone else reduced to locked shells), and an **egress fence** at one chokepoint so nothing on it can reach a real person. It complements the disposable environment rather than replacing it: agents fuzz the disposable copy with stubs on; humans rehearse on the twin with real-shaped data and real behavior.
+
+[`docs/RELEASE-FLAGS-SPEC.md`](./docs/RELEASE-FLAGS-SPEC.md) is the other half: every commit ships dark, and a super admin turns a feature on for the team, named people, a pilot tenant, then everyone, from an admin page with no deploy. Resource-scoped pages and background work decide by the resource's owner, an env var stays the kill switch, and flag debt is fenced by a cap, a cleanup task filed the moment a flag reaches everyone, and the [`remove-flag`](./skills/remove-flag/SKILL.md) skill. Flags cannot make outward writes safe for a team member who is also a real user, which is why the twin stays.
 
 ## What we haven't fully solved (gaps worth closing)
 

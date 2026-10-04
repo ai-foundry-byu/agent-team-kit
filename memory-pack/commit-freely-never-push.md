@@ -25,3 +25,8 @@ A workflow many solo/small-team owners prefer: **commit often, push never** (unl
 
 **Why:** committing is free and reversible; pushing costs money and ships to users. Separating
 the two lets work land continuously while the owner owns the deploy moment.
+
+**If your pipeline deploys on a TAG instead of a push** ([[deploy-is-not-release]], the kit's
+`docs/RELEASE-PIPELINE.md`), the push stops being the deploy trigger: push freely to get work
+off the machine and through CI, and the owner keeps the tag instead. That is the better
+setup once several agents share main.

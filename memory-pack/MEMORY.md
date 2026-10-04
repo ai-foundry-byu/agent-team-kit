@@ -24,3 +24,9 @@ own `MEMORY.md` when adopting the pack (see README.md).
 - [No em dashes](no-em-dashes.md) — never in copy, comments, commits, notes, or chat replies; grep before commit/send.
 - [Commit freely, never push](commit-freely-never-push.md) — commit each unit of work without asking; the owner owns the push/deploy trigger; never rewrite pushed history.
 - [Real icons, not emoji](real-icons-not-emoji.md) — use the project's real icon set for UI iconography; never emoji/unicode glyphs.
+- [Deploy is not release](deploy-is-not-release.md) — push runs CI only, a tag deploys (rc to staging, final to prod), a flag releases to an audience.
+- [Promote the staged commit](promote-the-staged-commit.md) — after a rehearsal ship exactly what staging serves; read its SHA from the twin; ask if main moved.
+- [Staging is a twin, not a demo](staging-is-a-twin-not-a-demo.md) — same build and config, differences on a named allowlist a parity checker enforces; the team's data slice.
+- [Fence outward writes at one chokepoint](fence-outward-writes-at-one-chokepoint.md) — one fenced-fetch helper + allowlists + an arch test that fails on any bypass; fenced is not failed.
+- [Check before flagging a shipped feature](check-before-flagging-a-shipped-feature.md) — a new flag with no row retracts a live feature; set the audience before deploy; move notes and help with it.
+- [Check a secret's shape, never print it](check-a-secrets-shape-never-print-it.md) — length/charset/trailing char + a harmless provider probe; copied secrets are often truncated or carry a period.
