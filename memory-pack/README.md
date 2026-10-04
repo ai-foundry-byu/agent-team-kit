@@ -48,6 +48,7 @@ doc/hook is the *mechanism*.
 | `branch-once-at-a-seam` | One flag check at one seam, a plain if/else, off returns null, data readable by both paths. |
 | `env-flags-are-for-what-stays` | Env holds kill switches, stubs and config; rollouts are release flags; entitlements get their own list. |
 | `removing-a-flag-check-silent-callers` | Before deleting the off branch, read deployed config and find callers that leave an optional flag param out. |
+| `pick-the-lever-by-lifetime-and-owner` | Per-person differences pick one lever (flag, kill switch, role, entitlement, preference) by lifetime and owner; never a role or paid tier in a flag. |
 
 `MEMORY.md` here is the pack's index in the same one-line-per-entry format the memory system uses.
 

@@ -15,7 +15,7 @@ build time is too late. And an agent that builds a flagged feature and reports "
 the owner believing it is live when it is off for everyone.
 
 **How to apply:**
-- The spec has a required Release section: kind and why, the flag key, the one seam the
+- The spec has a required Access and release section: kind and why, the flag key, the one seam the
   check goes in, whose flags apply (viewer or resource owner), the off path, the rollout.
   Unknown is an open question with a recommended answer, never a blank.
 - A release flag brings three standard criteria: a browser check that a user WITHOUT the

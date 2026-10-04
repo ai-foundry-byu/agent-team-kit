@@ -45,7 +45,12 @@ Use `TEMPLATE.md` next to this file. The sections that carry the weight:
   error behaviour, what happens with the feature flag off, what the thing is
   called. This is the section that stops the build from re-litigating what you
   settled at 11pm.
-- **Release.** Required, never left blank: the kind (release flag, permanent
+- **Access and release.** Required, never left blank. First, every way the
+  feature differs by person or organisation, each with its lever (release
+  flag, kill switch, role / relationship, entitlement or enablement on the
+  tenant row, preference) and exactly where it lives, picked with the
+  template's five questions; never a role or a paid tier expressed as a
+  release flag. Then the release: the kind (release flag, permanent
   kill switch, rehearse on staging, or no flag) and why, the flag key, the one
   seam the check goes in, whose flags apply (viewer or resource owner), what the
   off path looks like, and the rollout order. Decide it here because the answer
@@ -135,7 +140,7 @@ iteration in the loop, and it only exists before code does.
 Say plainly:
 
 - what you assumed, and what you left open;
-- how it will be released (the Release section in one line), so a wrong
+- how it will be released (the Access and release section in one line), so a wrong
   call is caught while it is still a sentence;
 - which criteria are `unit` or `structure`, and therefore can never be checked
   in a browser;

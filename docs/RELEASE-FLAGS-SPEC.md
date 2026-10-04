@@ -210,11 +210,43 @@ Every release flag is two code paths, one of which nobody runs once the feature 
 - **For per-request changes, ask three questions about the FIRST audience:** what is the worst case, whose data does it land on, and can it be undone? If it lands on the team's own data, or it is reversible, a flag is enough. If it is irreversible and lands outside the team (a real student's inbox, a live gradebook, a payment), rehearse on the fenced twin first ([`STAGING-TWIN-SPEC.md`](./STAGING-TWIN-SPEC.md)). "Writes to an outside system" is not by itself a staging rule: it depends on whose data the first audience reaches. A team member who is also a real teacher makes Team an audience that reaches real students.
 - **Pure refactors (renames, moves, extractions) get tests, not flags.** There is nothing to release.
 
-The spec template's Release section asks these questions at spec time ([`../skills/spec/TEMPLATE.md`](../skills/spec/TEMPLATE.md)).
+The spec template's Access and release section asks these questions at spec time ([`../skills/spec/TEMPLATE.md`](../skills/spec/TEMPLATE.md)).
 
 ---
 
-## 14. Writing flagged code
+## 14. Who sees what: a release flag is one of six levers
+
+A release flag is the right tool for one question only: "is this new code on for you yet?" Apps differ per person for other reasons, and each has its own lever. Most mistakes here are the right idea in the wrong lever: a role kept in a flag table, a paid tier kept as a rollout, a rollout kept forever as an env var.
+
+| Lever | Answers | Lifetime | Who changes it | Lives in |
+|---|---|---|---|---|
+| **Release flag** | Is the new code on for you yet? | Weeks, then deleted | You, during rollout | The flag registry + table (this spec) |
+| **Kill switch** | Is this safe to run right now? | Permanent | Ops, in an incident | An env var |
+| **Experiment** | Which variant are you in? | Until measured | Product | An experiment framework, not this table |
+| **Role / relationship** | Who are you to this data? (a member of this class, staff at this tenant, an alum) | Permanent, per person | The relationship itself (enrolment, employment) | Relationship tables + access policies (row-level security) |
+| **Entitlement / enablement** | Does your organisation have this? Entitlement: they bought it (plan, license, contract). Enablement: they switched it on (a tenant setting). | Permanent, per tenant | Billing, a contract, or a tenant admin | The tenant's row: its plan's features, its license, its settings |
+| **Preference** | How do you like it? | Permanent, per person | The user | A per-user settings row |
+
+**R49. Pick the lever with the first yes.** Ask in order: (1) does it go away when a rollout ends? release flag; (2) is it for switching off in an incident? kill switch; (3) does it depend on the person's relationship to the data? role / relationship; (4) does it depend on what their organisation bought or turned on? entitlement or enablement; (5) does the user choose it? preference. **Tiebreak between 1 and 4: will some customer permanently get "no", on purpose?** Then it is an entitlement and the check stays forever; a release flag's answer ends as "yes for everyone", so its check is deleted.
+
+**R50. Code holds the question, data holds the answer.** For every lever except a kill switch, the check is written once in code ("does this teacher's plan include AI scoring?") and the answer lives in rows (their subscription's plan, their tenant's license). Moving a customer between tiers, changing what a tier includes, or enrolling a student is a data change, never a deploy. The difference between an entitlement and a release flag is only whether the question itself is permanent.
+
+**R51. Roles and relationships are enforced by the database.** The levers, in a Postgres + Supabase stack: relationship tables (`memberships`, `class_members`); small `SECURITY DEFINER` helpers (`is_class_teacher(class_id)`, `is_tenant_admin(tenant_id)`, `has_permission('x')`) that keep policies short; row-level security policies built from those helpers on every table; a permission catalog plus per-person grants for anything finer than a role; a route policy table that decides which areas a role may enter at all; and the role copied into the session token for cheap routing reads (a convenience, never the guard). A server action that must bypass row-level security re-checks with the same helper.
+
+**R52. The UI reads one capability function.** `can(viewer, "capability")` combines role, entitlement or enablement, release flag and preference into one answer, and components ask it, never "is this faculty" or "is flag X on". When a rule changes (supporters now get exports too), it changes in one place. The database still enforces data access underneath: `can()` decides what to show, the policies decide what can be read or written. Each persona (student, faculty, alumni, client) usually gets its own home and navigation built from shared components, rather than one page full of role checks; people with two roles need an explicit rule (a switcher, or the union) decided in the spec.
+
+**R53. Keep the lists apart.** Release flags, entitlements and roles never share a registry: the release-flag cap, cleanup task and removal skill exist to delete checks, and must never reach one a customer paid for or one that defines who someone is. A release flag may TARGET a role ("alumni first") or a tenant ("this pilot school"); that is an audience, not storage.
+
+**Worked example: gating AI grading by plan.** A grading app lets teachers grade manually, with AI scores, or with AI scores and feedback, and the business wants free plans held to manual.
+
+- *Lever:* entitlement (some customers permanently get "no").
+- *Code, once:* each plan row gains a feature list (`{ ai_score, ai_feedback }`); one server function `entitlementsFor(user)` reads the teacher's plan and their school's license (a school deal beats a personal plan); the dial shows unavailable modes locked with an upgrade note; the server actions that start AI grading cut the requested modes down to what is allowed; background grading uses the PAPER OWNER's entitlements, since it has no viewer; tests in both directions, including a hand-crafted request from a free plan.
+- *Data, forever after:* an upgrade is the billing webhook changing the subscription's plan; "Standard now includes feedback" is an edit to Standard's row; a school deal is a license row. No deploys.
+- *Shipping it:* existing free users can use AI scoring today, so the gating code ships dark behind a release flag (`plan_gating`), is checked on the team, existing customers are grandfathered by a data change, then the flag opens to everyone and is removed. The entitlement check stays; the flag only made the rollout safe.
+
+---
+
+## 15. Writing flagged code
 
 **R45. Branch once, at a seam.** Put the check in one place (a load, an action, a component boundary) and let everything below it be ordinary code. A flag scattered through a function cannot be reasoned about, tested in both states, or removed cleanly. If the code has no seam where the feature can be switched, creating one is the first item of the build.
 
@@ -226,7 +258,7 @@ The spec template's Release section asks these questions at spec time ([`../skil
 
 ---
 
-## 15. Build checklist
+## 16. Build checklist
 
 1. The registry: typed keys, name, description, owner, created date, and a registry test that every entry is complete (R6).
 2. The pure evaluator and override parser, unit-tested for every audience rule, both directions (R2, R3, R5, R11, R14).
@@ -244,7 +276,7 @@ The spec template's Release section asks these questions at spec time ([`../skil
 14. The staging copy lists the audience table as reference data and the history as never-copy (R37).
 15. A probe flag with its own tiny page, for checking targeting by hand (Lesson L5).
 
-## 16. Test checklist
+## 17. Test checklist
 
 **Evaluation**
 - No row: off for everyone, including the team.
@@ -286,7 +318,7 @@ The spec template's Release section asks these questions at spec time ([`../skil
 
 ---
 
-## 17. Lessons from the build
+## 18. Lessons from the build
 
 - **L1. Flagging a shipped feature retracts it.** The first real flag went on a feature that had already shipped to every user that morning, which the person adding the flag believed was still unreleased. A flag with no row is Off, so the deploy would have taken the feature away from everyone. Before choosing a flag's first audience, check whether the feature is already live and whether anyone has used it (a count of its rows is enough), and **set the audience before the deploy lands**, so there is no window where nobody has it.
 - **L2. Release notes and help text follow the flag.** The release notes had already announced the feature and the help center described it. Narrowing the audience meant removing both in the same release, and noting in the commit where to restore the help text when the flag reaches Everyone.

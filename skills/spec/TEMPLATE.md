@@ -10,11 +10,36 @@ Checked by hand off `check.md` unless someone asks for walk mode.
 <One paragraph. What changes for the user, in their language. If you cannot say
 it without listing implementation, the scope is not settled yet.>
 
-## Release
+## Access and release
 
-<Required. Decide how this reaches people NOW, before code exists: a mockup is
-too early (it shows how it looks, not how it ships) and build time is too late
-(the code's shape already exists). See the kit's docs/RELEASE-FLAGS-SPEC.md.>
+<Required. Decide, before code exists, WHO gets this and HOW it reaches them: a
+mockup is too early and build time is too late (the code's shape already
+exists). See the kit's docs/RELEASE-FLAGS-SPEC.md, section "Who sees what".>
+
+### Access: what differs by person, and which lever handles it
+
+<One row per thing that differs by person or organisation. Write "n/a: the
+same for everyone" if nothing does. Pick the lever with the first YES:
+1. Does it go away when a rollout ends? -> release flag (below).
+2. Is it for switching something off in an incident? -> kill switch (env).
+3. Does it depend on the person's relationship to the data (their class,
+   tenant, own records)? -> role / relationship: an access policy + helper.
+4. Does it depend on what their organisation bought or turned on? ->
+   entitlement (bought: plan, license) or enablement (switched on: tenant
+   setting), stored on the tenant's row.
+5. Does the user choose it? -> preference.
+Tiebreak between 1 and 4: will some customer PERMANENTLY get "no", on purpose?
+Then it is an entitlement and the check stays forever.>
+
+| What differs | For whom | Lever | Exactly where (policy + helper, tenant field, flag key, setting) |
+| ------------ | -------- | ----- | ---------------------------------------------------------------- |
+| <...>        | <...>    | <...> | <...>                                                            |
+
+<Every row is enforced on the server or by the database, not only in the UI.
+UI reads one capability function (`can(viewer, "x")`) if the project has one.
+Each row about visibility brings a NEGATIVE walk criterion.>
+
+### Release
 
 - **Kind:** <release flag | permanent kill switch | rehearse on staging | no
   flag>, because <reason>.

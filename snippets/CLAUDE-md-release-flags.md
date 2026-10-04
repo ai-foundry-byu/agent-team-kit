@@ -6,7 +6,7 @@ New features ship to production DARK and are released by audience on
 `<admin flags route>` (super admins only): Off, Team, named people, tenants,
 Everyone. No deploy; it reaches every request within the cache window.
 
-- **Decide at spec time.** Every spec's Release section names the kind (release
+- **Decide at spec time.** Every spec's Access and release section names the kind (release
   flag, permanent kill switch, rehearse on staging, no flag) and why, the key,
   the one seam the check goes in, whose flags apply (viewer or resource owner),
   the off path, and the rollout. A flag controls WHO the code runs for, not

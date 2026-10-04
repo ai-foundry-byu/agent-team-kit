@@ -35,3 +35,4 @@ own `MEMORY.md` when adopting the pack (see README.md).
 - [Branch once at a seam](branch-once-at-a-seam.md) — one check, plain if/else, off returns null, never pass the flag around, data readable by both paths.
 - [Env flags are for what stays](env-flags-are-for-what-stays.md) — kill switches, stubs, config stay in env; rollouts are release flags; entitlements get their own list.
 - [Removing a flag: check silent callers](removing-a-flag-check-silent-callers.md) — read deployed config; a caller that leaves an optional flag param out runs OFF in prod today.
+- [Pick the lever by lifetime and owner](pick-the-lever-by-lifetime-and-owner.md) — release flag, kill switch, role, entitlement/enablement or preference; never a role or paid tier in a flag; code holds the question, rows the answer.

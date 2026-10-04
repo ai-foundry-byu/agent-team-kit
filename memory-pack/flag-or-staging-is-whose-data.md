@@ -23,5 +23,5 @@ what the code does, and switching a flag off does not unsend an email or un-post
 - Watch the hidden case: a team member who is also a real teacher, clinician or seller
   makes "Team" an audience that reaches real people.
 - **Pure refactors** (renames, moves, extractions) get tests, not flags or rehearsals.
-- Answer this in the spec's Release section ([[decide-the-release-at-spec-time]]). Kit:
+- Answer this in the spec's Access and release section ([[decide-the-release-at-spec-time]]). Kit:
   `docs/RELEASE-PIPELINE.md` section 5, `docs/RELEASE-FLAGS-SPEC.md` R38.

@@ -73,7 +73,11 @@ find later.
 2. Read `punchlist.md` and take the first unchecked item.
 3. Start a dev server only if you need a browser, and only on the port assigned
    to this session, never the human's.
-4. **Read the spec's Release section and build to it.** If it is a release
+4. **Read the spec's Access and release section and build to it.** Each
+   Access row is built where the spec says (the access policy and its helper,
+   the tenant field, the setting), enforced on the server or by the database,
+   with its negative check on the sheet; if a row names no exact place, stop
+   and ask. If the release is a release
    flag: register the key first and put the check at the named seam (a punch
    list item of its own if the seam does not exist yet); build and look at the
    feature with the flag FORCED ON locally (the env override, e.g.

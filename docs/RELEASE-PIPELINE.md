@@ -121,7 +121,7 @@ two kinds of change:
 Also good on road B: AI prompt changes where you want to read real output
 first, and anything a pilot user should try before customers do.
 
-The spec template asks this at spec time, in its Release section
+The spec template asks this at spec time, in its Access and release section
 ([`../skills/spec/TEMPLATE.md`](../skills/spec/TEMPLATE.md)), so the road is
 known before the code is written.
 

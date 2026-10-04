@@ -29,10 +29,11 @@ A small set of conventions that keep an agent-driven repo tidy. They are stack-a
 
 ## Release flags
 
-- **Decide how a feature reaches people in its spec**, not at build or ship time: release flag, permanent kill switch, rehearse on staging, or no flag, with the seam, whose flags apply, the off path and the rollout. See [`RELEASE-FLAGS-SPEC.md`](./RELEASE-FLAGS-SPEC.md) and the spec template's Release section.
+- **Decide how a feature reaches people in its spec**, not at build or ship time: release flag, permanent kill switch, rehearse on staging, or no flag, with the seam, whose flags apply, the off path and the rollout. See [`RELEASE-FLAGS-SPEC.md`](./RELEASE-FLAGS-SPEC.md) and the spec template's Access and release section.
 - **A flag controls who the code runs for, not what it does.** Deploy-time changes rehearse on staging; per-request changes do only if their first audience could do irreversible harm outside the team ([`RELEASE-PIPELINE.md`](./RELEASE-PIPELINE.md), section 5).
 - **Branch once, at a seam**, as a plain if/else on the flag; off is byte-identical to before; never pass the flag's value around.
 - **Env vars are for what stays** (kill switches, stubs, config). Rollouts are release flags; entitlements get their own list.
+- **A release flag is one of six levers for "who sees what".** Roles live in relationship tables and access policies, paid tiers and tenant settings on the tenant's row, choices in user preferences; the UI asks one capability function. Never keep a role or a paid tier in a release flag. See [`RELEASE-FLAGS-SPEC.md`](./RELEASE-FLAGS-SPEC.md), section 14, and `snippets/CLAUDE-md-access-model.md`.
 - **Removing a flag is part of finishing the feature**, and starts by reading what every environment actually sets and who calls the code without passing the flag.
 
 ## Verification
