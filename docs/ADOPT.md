@@ -28,7 +28,7 @@ From inside your project's root:
 
 ```bash
 # Clone the kit to a scratch dir OUTSIDE your repo, install into your repo, clean up.
-gh repo clone sdmurff/agent-team-kit /tmp/agent-team-kit
+gh repo clone ai-foundry-byu/agent-team-kit /tmp/agent-team-kit
 /tmp/agent-team-kit/install.sh "$PWD"
 rm -rf /tmp/agent-team-kit
 ```
@@ -36,7 +36,7 @@ rm -rf /tmp/agent-team-kit
 Prefer to keep it around for updates? Clone it once to a permanent spot and re-run its installer against any project:
 
 ```bash
-gh repo clone sdmurff/agent-team-kit ~/tools/agent-team-kit      # once
+gh repo clone ai-foundry-byu/agent-team-kit ~/tools/agent-team-kit      # once
 ~/tools/agent-team-kit/install.sh /path/to/any/project           # any time
 ```
 
@@ -74,7 +74,7 @@ The collaborator-only pieces lie dormant until you add someone, so there is noth
 1. Create and `git init` the project (or clone your starter), make a first commit.
 2. One person runs the pull-it-in block, customizes for the stack, commits, and **pushes**.
 3. The other clones the **project** and runs `./bootstrap.sh`.
-4. Both read "Collaboration model, end to end" in the [README](../README.md): claim lanes, pull-rebase often, one person owns deploys.
+4. Both read "Collaboration model, end to end" in the [README](../README.md): claim lanes, pull-rebase often, agree who cuts release tags (see [`RELEASE-PIPELINE.md`](./RELEASE-PIPELINE.md)).
 5. (optional) Build the feedback loop from the spec.
 
 ### C. Solo project, adding a second person (transition)
@@ -84,7 +84,7 @@ You already did path A while solo. To bring someone on:
 1. Confirm the shared artifacts are committed: `.claude/settings.json`, `.claude/skills/`, `scripts/hooks/`, `.githooks/`, the CLAUDE.md section, the `.gitignore` lines (the installer set these up). **Push.**
 2. Purge anything sensitive from history first if needed.
 3. The new person clones the **project** and runs `./bootstrap.sh` (sets their git hooks path; prints the two manual bits: personal config in `settings.local.json`, and start a fresh session).
-4. Switch on the human agreements: both read the collaboration model. The shifts from solo are: stay in lanes, pull-rebase often, announce migrations, decide who owns deploys.
+4. Switch on the human agreements: both read the collaboration model. The shifts from solo are: stay in lanes, pull-rebase often, announce migrations, agree who cuts release tags.
 
 Same install you already did, now with a second clone plus the agreements active.
 

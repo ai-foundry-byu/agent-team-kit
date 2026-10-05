@@ -7,7 +7,7 @@ The full step-by-step for all three situations is in [`ADOPT.md`](./ADOPT.md): t
 From your project root, after committing your working tree (so you can review what's added):
 
 ```bash
-gh repo clone sdmurff/agent-team-kit /tmp/agent-team-kit
+gh repo clone ai-foundry-byu/agent-team-kit /tmp/agent-team-kit
 /tmp/agent-team-kit/install.sh "$PWD"
 rm -rf /tmp/agent-team-kit
 ```
