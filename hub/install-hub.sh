@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# install-hub.sh — set up the hub-and-spokes tooling on this machine.
+# install-hub.sh: set up the hub-and-spokes tooling on this machine.
 #
 # Creates the container (~/hubs by default), installs the `hub` dispatcher and the
 # _template cockpit into it, and adds a `hub` alias to your shell rc. Idempotent.
@@ -22,7 +22,7 @@ mkdir -p "$HUBS"
 install -m 0755 "$SRC/hub" "$HUBS/hub"
 
 if [ -d "$HUBS/_template" ]; then
-  echo "• _template already present at $HUBS/_template — left as-is"
+  echo "• _template already present at $HUBS/_template, left as is"
 else
   cp -R "$SRC/_template" "$HUBS/_template"
   chmod +x "$HUBS/_template/launch"
@@ -30,7 +30,7 @@ else
 fi
 
 if grep -qs "alias hub=" "$RC"; then
-  echo "• 'hub' alias already in $RC — left as-is"
+  echo "• 'hub' alias already in $RC, left as is"
 else
   printf "alias hub='%s/hub'\n" "$HUBS" >> "$RC"
   echo "• added 'hub' alias to $RC"

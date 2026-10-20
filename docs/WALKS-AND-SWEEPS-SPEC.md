@@ -30,8 +30,8 @@ There are three questions you can ask a running app, and they need three tools:
 A crawler proves a page didn't error; it cannot see that the page is confusing,
 that a button does nothing, or that a stat contradicts the table beneath it. A
 spec asserts a handful of things and discards the rest. Walks and sweeps keep
-the **whole trail** — a screenshot per state, the URL, the console errors, the
-failed requests — and put a human (or an agent) in front of it to judge.
+the **whole trail** (a screenshot per state, the URL, the console errors, the
+failed requests) and put a human (or an agent) in front of it to judge.
 
 The [ux-critique](../skills/ux-critique/SKILL.md) skill is the ancestor: an
 LLM walking a flow with an expectation loop. This spec is what it becomes when
@@ -43,7 +43,7 @@ named pass types, one report, one filing path.
 ## The two passes at a glance
 
 ```
-  WALK  — one journey, moving                 SWEEP — one screen, standing still
+  WALK:   one journey, moving                 SWEEP: one screen, standing still
   ----                                        -----
   sign in, then travel a flow:                enumerate every control on the screen,
   step -> screenshot + write the              then for EACH control:
@@ -89,7 +89,7 @@ first failure hides every problem after it.
 ### A3. Capture the whole trail
 
 Per step, record: a screenshot, the URL, the visible heading, the wall-clock,
-and two error buckets drained fresh each step — **console errors** and **failed
+and two error buckets drained fresh each step: **console errors** and **failed
 requests** (any 4xx/5xx the page fired). A page that looks fine but is throwing
 a background 400 is a real finding a screenshot alone would miss. On a
 production walk, also record the true page latency from the browser's
@@ -131,7 +131,7 @@ invisible to a journey test (which never clicks it) and to a crawler (which only
 checks the page didn't crash). The sweep is the only pass that catches a dead
 button, a mis-wired handler, or a link to nowhere.
 
-### B2. Reset to baseline before every click — and reloading is not enough
+### B2. Reset to baseline before every click: and reloading is not enough
 
 Between clicks the screen must return to exactly where it started, or one early
 click contaminates every measurement after it. Reloading the URL is
@@ -156,13 +156,13 @@ To click control *n* after a reset, you must locate the same element again.
 Re-deriving a selector from the control's visible label loses every icon-only
 button and mis-hits every duplicate label on the page. Instead, during
 enumeration **stamp each control with an index attribute** (`data-sweep-n="k"`)
-and select on that. Corollary: do **not** filter enumeration on `opacity` — a
+and select on that. Corollary: do **not** filter enumeration on `opacity`. A
 control that is transparent until you hover its row (a table row's actions, a
 switcher) is a real control a user can click, and a real click hovers it on the
 way in; filtering it out makes it enumerate at baseline and then vanish, which
 the sweep can only report as a phantom error.
 
-### B5. Skip what mutates or escapes — two kinds
+### B5. Skip what mutates or escapes: two kinds
 
 A sweep clicks *everything*, so it needs a guard, and the guard has two parts
 because state changes hide behind two kinds of label:
@@ -185,7 +185,7 @@ Sweeping every screen takes real time, but a route can silently stop resolving
 when the app changes (a page starts linking to `.../build` instead of the bare
 hub). Provide a **dry run** that signs in, resolves every catalogued screen's
 route (including the ones whose path depends on seeded data), and reports how
-many controls each has — clicking nothing. Run it after any routing change; it
+many controls each has, without clicking anything. Run it after any routing change; it
 re-validates the whole catalog in seconds and names the screens the app no
 longer reaches.
 
@@ -202,11 +202,11 @@ The report opens on a table: one row per journey and per screen, each with a
 **verdict that is computed, never hand-written**, so it cannot drift from what
 was recorded:
 
-- **Needs action** — a step broke, or a high-severity finding.
-- **Worth a look** — smaller findings, a control that did nothing, or an error
+- **Needs action**: a step broke, or a high-severity finding.
+- **Worth a look**: smaller findings, a control that did nothing, or an error
   the page logged that no one has filed.
-- **Working well** — the pass ran clean.
-- **Not run yet** — no pass recorded (kept visible on purpose; the catalog is a
+- **Working well**: the pass ran clean.
+- **Not run yet**: no pass recorded (kept visible on purpose; the catalog is a
   coverage map, and an unrun surface is a gap, not an absence).
 
 Plus what's driving the verdict in one line, and how much of the surface the
@@ -216,7 +216,7 @@ pass covered (a capped or partly-skipped sweep says so).
 
 A pass reads as **machine-checked only** until a reviewer has actually looked at
 every screenshot and marks it reviewed. This separates "the classifier found
-nothing" from "a human confirmed it's fine" — two different claims that a naive
+nothing" from "a human confirmed it's fine": two different claims that a naive
 report renders identically. A half-read pass can never present itself as a clean
 bill of health.
 
@@ -231,7 +231,7 @@ wrote attach to the exact step or control that produced them.
 ## Part D, Tie into the feedback loop (the payoff)
 
 A finding is only worth producing if acting on it is cheap. So a finding is
-**not a new data type** — it is a [`bug_reports`](./FEEDBACK-LOOP-SPEC.md) row,
+**not a new data type**: it is a [`bug_reports`](./FEEDBACK-LOOP-SPEC.md) row,
 filed through the same intake a human widget report uses, which means it
 inherits the entire pipeline for free: the admin inbox, triage, the
 `/fix-bug <id>` warm start, the screenshot bucket, and the close-on-commit hook.
@@ -244,8 +244,8 @@ signal; a walk/sweep finding is your own QA output, generated in batches, and
 mixing them drowns the former and distorts every "how much feedback did we get"
 count. The [feedback spec's `source` column](./FEEDBACK-LOOP-SPEC.md#findings-come-from-humans-or-agents-the-source-tag)
 is exactly this axis: file with `source: 'walkthrough'` (alongside `'user'`,
-`'ux-critic'`, the crawler sources), and give the inbox a filter — *from people*
-/ *from our passes* / *all* — defaulting to people.
+`'ux-critic'`, the crawler sources), and give the inbox a filter (*from people*
+/ *from our passes* / *all*), defaulting to people.
 
 ### D2. The finding carries the same tidy context package
 
@@ -264,19 +264,19 @@ bundle shape, assembled from the run instead of the browser:
 - the exact **command that reproduces** the pass, and *where it was found* (a
   local build with seeded data, or production).
 
-Severity rides along too — unlike a scripted `bug:file`, a walk/sweep finding
+Severity rides along too: unlike a scripted `bug:file`, a walk/sweep finding
 was already severity-judged against a screenshot during review, so dropping it
 would throw away the reviewer's read.
 
 ### D3. Idempotent filing, by a stable fingerprint
 
 Re-running a sweep must not spam the inbox. Give each finding a **stable id
-slug** and fingerprint it as `hash(passId :: findingId)` — the finding's own id,
-not its title, so its wording can be rewritten later without orphaning the
+slug** and fingerprint it as `hash(passId :: findingId)`, using the finding's own id
+rather than its title, so its wording can be rewritten later without orphaning the
 ticket. Before filing, look up open `source: walkthrough` rows by fingerprint
 and skip the ones already filed.
 
-### D4. The report joins the inbox back — one copy, one paste
+### D4. The report joins the inbox back: one copy, one paste
 
 The report is a *render of two things*: the evidence on disk, and the state of
 the tickets those findings became. At build time, query the inbox for filed
@@ -314,8 +314,8 @@ locally; the ticket lives where `fix-bug` and close-on-commit already look.
 ## Part E, Where these run (local vs production)
 
 Local and production answer different questions, and the pass type decides which
-is safe. The full model — the disposable target, the graded posture that lets a
-walk touch production safely — is in
+is safe. The full model (the disposable target, the graded posture that lets a
+walk touch production safely) is in
 [`DISPOSABLE-ENVIRONMENT.md`](./DISPOSABLE-ENVIRONMENT.md). The rules that
 matter here:
 
@@ -323,7 +323,7 @@ matter here:
   control do something, does the flow make sense. Cheap, free, resettable, no
   real PII. Both passes run here freely.
 - **Production answers "is it true."** Real data shape (a full cohort, long
-  names, messy uploads), real integrations, real latency, and realtime — none of
+  names, messy uploads), real integrations, real latency, and realtime; none of
   which local can produce. Only a **walk** goes here, and only **read-only or
   guarded** (Part E of the disposable doc: writes enforced-off at the network
   layer, with an escape list for effects that reach other people).
@@ -363,9 +363,9 @@ matter here:
 ## How it pairs with the rest of the QA layer
 
 - The [crawlers](./CRAWLERS-SPEC.md) answer *did it break* across every URL and
-  action — the broad, cheap first net.
+  action: the broad, cheap first net.
 - **Walks and sweeps** answer *does it make sense* and *does every control
-  work* — the judged pass, with a report a product owner can read.
+  work*: the judged pass, with a report a product owner can read.
 - The [feedback loop](./FEEDBACK-LOOP-SPEC.md) is the shared spine: crawler
   findings, critic findings, walk/sweep findings, and real human reports all
   land in one inbox and hand off to [`fix-bug`](../skills/fix-bug/SKILL.md) the

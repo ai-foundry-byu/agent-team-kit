@@ -9,15 +9,15 @@ A workflow many solo/small-team owners prefer: **commit often, push never** (unl
 
 - **Commit after each unit of work, without asking.** Committing is pre-authorized and
   reversible (`git reset` while unpushed, `git revert` once pushed), so just do it when a unit
-  is done — don't end with "want me to commit?". Use conventional prefixes and stage only the
+  is done; don't end with "want me to commit?". Use conventional prefixes and stage only the
   files related to the work at hand (the tree often holds unrelated in-flight changes; never
-  sweep those in — see [[format-only-touched-files]]).
+  sweep those in; see [[format-only-touched-files]]).
 - **Do NOT push.** Each push to the main branch typically fires a paid production build/deploy,
   so the owner controls exactly when that happens. Leave the push to them; run `git push` only
-  when explicitly asked in the moment. (Batch-of-many pushes can burn real money fast — the
+  when explicitly asked in the moment. (Batch-of-many pushes can burn real money fast, which is the
   reason the owner keeps the trigger.)
 - **Commit straight to the main branch, no feature branches** by default when the owner works
-  solo — branch-per-change is ceremony they don't want. (This overrides the generic
+  solo; branch-per-change is ceremony they don't want. (This overrides the generic
   branch-first habit; keep it if the project is genuinely multi-author.)
 - **Never rewrite pushed history** (no force-push, no amend/rebase of pushed commits). Before
   committing, run the real build for import changes ([[verify-with-the-real-build]]). Under

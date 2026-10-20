@@ -10,7 +10,7 @@ button labels, meta descriptions, prose, code comments, commit messages, custome
 AND chat replies. Use commas, colons, periods, or "and"/"but" instead.
 
 **Why:** em dashes read as AI-generated; keeping them out makes copy feel human. This is a
-common repeat lapse — the dash gets written by reflex and never checked — so treat it as
+common repeat lapse (the dash gets written by reflex and never checked), so treat it as
 mechanical, not merely intentional.
 
 **How to apply:** before committing OR sending any message, scan for "—" and rephrase every

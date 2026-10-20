@@ -14,7 +14,7 @@ whole-repo format collides with them and can sweep them into your commit.
 **Why:** the standing rule is never sweep unrelated pre-existing changes into a commit; a
 whole-repo format manufactures exactly those, and on a shared tree it can clobber a sibling.
 
-**How to apply:** format only the files you touched — pass explicit paths
+**How to apply:** format only the files you touched: pass explicit paths
 (`prettier --write <file1> <file2>`), or let a staged-files-only pre-commit hook handle it.
 Stage explicit paths, never `git add -A` / `git add .`. If the repo genuinely needs a
 one-time repo-wide reformat, do it as its own dedicated `style:` commit when no parallel

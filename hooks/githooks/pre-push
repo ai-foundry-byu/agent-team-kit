@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pre-push gate — run the fast hermetic checks before a push. A push often
+# Pre-push gate: run the fast hermetic checks before a push. A push often
 # triggers a paid build / deploy, so the bar to cross it is "the fast checks are
 # green": typecheck + the unit/arch test suite. Catching a red build locally
 # saves a wasted paid build, not just time.
@@ -34,14 +34,14 @@ echo "→ pre-push: $CHECK_CMD && $TEST_CMD (fast gate before a push)…"
 
 if ! $CHECK_CMD; then
   echo ""
-  echo "✗ check failed — push blocked. Fix the errors above."
+  echo "✗ check failed: push blocked. Fix the errors above."
   echo "  Bypass (you own what ships): git push --no-verify"
   exit 1
 fi
 
 if ! $TEST_CMD; then
   echo ""
-  echo "✗ tests failed — push blocked. A unit / regression / critical test is red."
+  echo "✗ tests failed: push blocked. A unit / regression / critical test is red."
   echo "  Bypass (you own what ships): git push --no-verify"
   exit 1
 fi

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# launch — start Claude Code for THIS hub (cockpit).  Copied from the kit's _template.
+# launch: start Claude Code for THIS hub (cockpit).  Copied from the kit's _template.
 #
 # The hub is the neutral BASE: it anchors ONE memory brain (keyed to its path) and owns no
 # content. Put nothing substantive here. Each content folder is a SPOKE, mounted read/write
@@ -15,7 +15,7 @@
 set -euo pipefail
 
 # This hub's path is derived from the script's own location, so the base can't drift out of
-# sync with its folder. Do not move the hub after its first launch — memory is keyed to it.
+# sync with its folder. Do not move the hub after its first launch: memory is keyed to it.
 HUB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # --- content spokes: absolute paths, one per folder -------------------------------------

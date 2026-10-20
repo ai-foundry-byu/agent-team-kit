@@ -107,7 +107,7 @@ Separate from installing the kit *into a repo*, and done **once per machine**: t
 hub-and-spokes tooling sets up how you launch Claude across a project whose files are
 scattered (code repo + shared drive + org/personal storage). One neutral **hub** per
 project is the base and the memory anchor; all content is a **spoke** mounted via
-`--add-dir`. It's orthogonal to the per-repo install above — a repo you harden with the
+`--add-dir`. It's orthogonal to the per-repo install above, a repo you harden with the
 installer is simply one of a hub's spokes.
 
 ```bash

@@ -7,7 +7,7 @@ recall their own memories.
 
 - **One memory per file:** frontmatter (`name`, `description`, `metadata.type`),
   then the fact, then **Why:** and **How to apply:**.
-- **`MEMORY.md` is the index:** one line per memory, `- [Title](file.md) — hook`.
+- **`MEMORY.md` is the index:** one line per memory, `- [Title](file.md): hook`.
   The hook copies these lines into each person's own index, above their personal
   entries.
 - **Edit here, not in your memory folder.** The files there are links back to

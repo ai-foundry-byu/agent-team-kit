@@ -8,7 +8,7 @@ metadata:
 `git commit --amend` (and rebase, and pathspec-amend `git commit --amend -- <paths>`) is
 UNSAFE on a shared branch that concurrent agents commit to. Between your commit and your
 amend, a sibling can land a commit on top, moving HEAD. Your amend then rewrites the
-SIBLING's commit — folding your changes into theirs and tangling history. Pathspec-amend
+SIBLING's commit, folding your changes into theirs and tangling history. Pathspec-amend
 also silently KEEPS files the original commit had that you didn't list (a renamed file's
 old path lingers as a duplicate).
 

@@ -83,7 +83,7 @@ Two wrinkles when the reporter is an agent:
   *(When the disposable target is a **local, ephemeral** DB rather than a hosted
   project, invert this: the finding is discovered locally but the durable ticket
   is filed to **prod**, and you keep it out of the human queue by `source`
-  instead of by database — see the walk/sweep filer below.)*
+  instead of by database; see the walk/sweep filer below.)*
 - The "reporter" is a synthetic account, so the close-the-loop **notification is
   noise**, suppress it when `source` is an agent tag.
 
@@ -92,8 +92,8 @@ Two wrinkles when the reporter is an agent:
 `source` is not just a tag, it is a **queue divider**. A human's report is a
 customer signal; an agent's finding is your own QA output, filed in batches.
 Mixing them buries the former and distorts every "how much feedback did we get"
-count. So the same table gets a queue filter in the admin inbox — *from people*
-/ *from our passes* / *all*, defaulting to people — driven entirely by `source`.
+count. So the same table gets a queue filter in the admin inbox (*from people*
+/ *from our passes* / *all*, defaulting to people), driven entirely by `source`.
 One store, one triage, one close path, two audiences kept apart.
 
 ### The structured QA pass as a first-class source
@@ -117,7 +117,7 @@ Two properties make it more than "another way to insert a row":
   re-running a pass never duplicates a ticket.
 - **The report joins the inbox back.** The QA report is regenerated with a live
   lookup of filed findings by fingerprint, so each finding shows a copyable
-  `/fix-bug <id>` and its ticket status inline — reading the report and acting on
+  `/fix-bug <id>` and its ticket status inline, so reading the report and acting on
   it are one motion. A resolved ticket reads "fixed, re-run to verify" rather
   than disappearing, and the same `post-commit` close that resolves the bug also
   rebuilds the report, so it never goes stale on a fix.

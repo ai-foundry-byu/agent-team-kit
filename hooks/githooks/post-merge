@@ -1,5 +1,5 @@
 #!/bin/sh
-# post-merge — surface DB migrations that just arrived from upstream.
+# post-merge: surface DB migrations that just arrived from upstream.
 #
 # With two people committing to `main`, a `git pull` can bring the
 # collaborator's migration files into your tree while the shared dev DB is

@@ -1,4 +1,4 @@
-# hub/ — the hub-and-spokes tooling
+# hub/: the hub-and-spokes tooling
 
 Runnable tooling for the pattern in [`../docs/HUB-AND-SPOKES.md`](../docs/HUB-AND-SPOKES.md):
 one neutral **command center** per project, with all real content mounted as **spokes** via
@@ -24,9 +24,9 @@ hub myproject                           # launch (add a fenced spoke for one run
 
 ## Design defaults (and how to change them)
 
-- **Base path is auto-derived** in `launch` from the script's own location — you don't set
+- **Base path is auto-derived** in `launch` from the script's own location; you don't set
   it, and it can't drift out of sync with the folder. Just don't move a hub after first use.
 - **`--dangerously-skip-permissions` is OFF.** Flip `SKIP_PERMISSIONS="yes"` in a hub's
-  `launch` only if you fully trust every spoke — with it on, Bash can read outside the
+  `launch` only if you fully trust every spoke: with it on, Bash can read outside the
   mounted folders (file tools stay fenced regardless). See the doc's "honest limits."
 - **Container is `~/hubs`.** Override with `HUBS_DIR` at install and dispatch time.

@@ -53,13 +53,13 @@ behavior, on a disposable DB, is what you actually want.
 **Hosted disposable project vs a local one.** The disposable target can be a
 *hosted* project (its own cloud database) or a **local** stack on your machine
 (a local Supabase, a Docker Postgres). Local is cheaper and more disposable
-still, and once real users exist it is the safer default — dev-against-a-shared-
+still, and once real users exist it is the safer default: dev-against-a-shared-
 hosted-copy still holds god-mode credentials. The one thing local changes: it
 has no inbox anyone triages and a reset wipes it, so a durable *ticket* filed
 from a local run belongs in **prod**, separated from human reports by a `source`
 queue rather than by living in a second database (see
 [walks and sweeps, Part D6](./WALKS-AND-SWEEPS-SPEC.md#d6-a-note-on-where-tickets-live)).
-Everything else in this doc — the two knobs, stubs-off fidelity, the seatbelt —
+Everything else in this doc (the two knobs, stubs-off fidelity, the seatbelt)
 applies to a local target unchanged.
 
 ## Why a disposable PROJECT, not just a test account in prod
@@ -161,7 +161,7 @@ is improvising:
 
 The seatbelt above keeps a pass *off* prod. Sometimes you want the opposite: to
 drive **production deliberately**, because only prod has real data shape, live
-integrations, real latency, and realtime — things a disposable copy physically
+integrations, real latency, and realtime: things a disposable copy physically
 cannot produce. "Never touch prod" leaves those untested. The answer is not a
 binary (read-only vs full access) but a **graded posture, enforced at the
 network layer**, which is a stronger guard than issuer-abort because it works
@@ -181,19 +181,19 @@ report). This is enforcement, not a label heuristic you can rename your way past
 
 **The line `guarded` draws is your data vs other people's, not "is it my
 account."** Owning the account does not make a broadcast, an LMS push, or an
-impersonation safe — those escape the account. So `guarded` blocks a small,
+impersonation safe: those escape the account. So `guarded` blocks a small,
 readable **escape list**, each entry with a stated reason:
 
 - **admin / cross-tenant writes** (broadcasts, org/school config, deletions,
-  support replies) — they act on every tenant, not just you;
-- **impersonation / view-as** — they attribute your writes to a real user;
-- **LMS release / pushback** — writes grades into a real course (unblock only
+  support replies): they act on every tenant, not just you;
+- **impersonation / view-as**: they attribute your writes to a real user;
+- **LMS release / pushback**: writes grades into a real course (unblock only
   once the LMS target is genuinely ring-fenced);
-- **invites and support replies** — real email to a real person;
-- **payments** — real money.
+- **invites and support replies**: real email to a real person;
+- **payments**: real money.
 
-Everything else — creating, editing, grading, curving on your own account,
-spending your own credits — goes through, which is exactly the fidelity you came
+Everything else (creating, editing, grading, curving on your own account,
+spending your own credits) goes through, which is exactly the fidelity you came
 to prod for. Admin *reads* (a prompt inspector, a health page, a log view) are
 GETs, so they work in every posture; it is only the admin *writes* that escape.
 Keep the escape list unit-tested in both directions: a rule that stops blocking
@@ -204,7 +204,7 @@ Two corollaries specific to prod:
 
 - **Fuzzers (sweeps, the crawlers) never get `guarded`; they are refused on prod
   outright.** A sweep clicks every control on a screen, and its skip heuristic
-  gets caught missing. Only a scripted **walk** — a fixed, navigational path —
+  gets caught missing. Only a scripted **walk** (a fixed, navigational path)
   is safe to point at prod, and even then read-only by default.
 - **Prod screenshots hold real PII.** A screenshot of a real class carries
   student names and scores (an education record); a finding filed from a prod

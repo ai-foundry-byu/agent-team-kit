@@ -11,12 +11,12 @@ realistic data, no build step) in a **gitignored** directory (e.g. `/.mockups/` 
 root). The point is a fast see-it-then-iterate loop.
 
 **Why:** mockups are one-session exploration with no lasting value. Keeping them gitignored
-keeps them out of git, code search, grep, and the diff — no noise, no "keepers" folder to
+keeps them out of git, code search, grep, and the diff: no noise, no "keepers" folder to
 maintain. Once a design is built into the app, the mockup's job is done.
 
 **How to apply:**
 - One self-contained HTML file per exploration in the gitignored mockups dir. No promotion to
-  a tracked location — they are pure throwaway.
+  a tracked location; they are pure throwaway.
 - Always report a **control-clickable absolute path** the owner can open from the terminal,
   e.g. `file:///Users/you/project/.mockups/<name>.html` (never a bare relative path). If a
   local server is running, also offer the `http://localhost:<port>/...` form (fonts/hover

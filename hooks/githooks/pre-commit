@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pre-commit gate — fast, staged-files-only. Runs the architecture guards
+# Pre-commit gate: fast, staged-files-only. Runs the architecture guards
 # (file-size + import-boundary) on the files in THIS commit, so sprawl and
 # boundary violations never enter history. Add your formatter / linter where
 # marked. Heavier checks (typecheck, tests) run at pre-push, not here, so
@@ -16,7 +16,7 @@ root=$(git rev-parse --show-toplevel) || exit 0
 cd "$root" || exit 0
 
 # Staged, still-present files (Added/Copied/Modified/Renamed). NUL-delimited and
-# read with a while-loop (not mapfile) for bash 3.2 — macOS ships 3.2.
+# read with a while-loop (not mapfile) for bash 3.2: macOS ships 3.2.
 staged=()
 while IFS= read -r -d '' f; do
   staged+=("$f")

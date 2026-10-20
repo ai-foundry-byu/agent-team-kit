@@ -11,7 +11,7 @@ pathspec from the working tree first.
 
 **Why:** this silently defeats partial staging. In a parallel-agents workflow you might stage
 only your hunks of a shared file (`git add -p`, or `git apply --cached <mine.patch>`, leaving
-a sibling's uncommitted hunk out), then run `git commit -- <file>` — which sweeps the
+a sibling's uncommitted hunk out), then run `git commit -- <file>`, which sweeps the
 sibling's line in anyway, because pathspec-commit ignores the index and takes the whole
 working-tree file. On a shared branch that quietly commits someone else's in-flight work.
 

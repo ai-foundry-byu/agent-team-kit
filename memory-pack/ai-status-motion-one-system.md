@@ -10,11 +10,11 @@ set of shared primitives, so motion never has to be guessed and every surface fe
 system. **The rule: color tells what kind of work it is.**
 
 A workable primitive set (adapt names/looks to your brand):
-- **Thinking indicator** — a *model* is running. A distinctive mark + a steady (not flashing)
+- **Thinking indicator**: a *model* is running. A distinctive mark + a steady (not flashing)
   label + elapsed seconds. Reserve this look for AI work specifically.
-- **Spinner** — the *system* is busy (save / upload / fetch / render / delete). A plain
+- **Spinner**: the *system* is busy (save / upload / fetch / render / delete). A plain
   neutral spin; inherit color on colored buttons.
-- **Status dot** — a *background job* is alive (a pulsing dot); a static variant = failed.
+- **Status dot**: a *background job* is alive (a pulsing dot); a static variant = failed.
 
 **Why:** hand-rolled `animate-spin`/`animate-pulse` markup scattered across surfaces drifts
 into a dozen slightly different looks, and users can't learn what any one of them means. A

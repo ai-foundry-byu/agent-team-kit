@@ -12,7 +12,7 @@ triggers work needs two layers of feedback:
    sinks 1px) so a press registers immediately, before any async work returns. Apply it
    globally so no button is missed.
 2. **In-flight state:** on submit, the label is replaced IN PLACE by a spinner at the button's
-   exact idle width (never grows/shrinks — the Linear/Vercel/Stripe default), and the button
+   exact idle width (never grows or shrinks; the Linear/Vercel/Stripe default), and the button
    **self-disables** to block double-submits. Keep a screen-reader announcement for the busy
    state.
 

@@ -66,7 +66,7 @@ The test for a team memory: a collaborator who was not there can act on it.
 
 1. Write `.claude/team-memory/<name>.md` (same format: frontmatter, fact,
    **Why:**, **How to apply:**).
-2. Add one line to `.claude/team-memory/MEMORY.md`: `- [Title](<name>.md) — hook`.
+2. Add one line to `.claude/team-memory/MEMORY.md`: `- [Title](<name>.md): hook`.
 3. **Delete the personal copy** and remove its line from the personal
    `MEMORY.md`. Otherwise it shadows the team version: the hook never overwrites a
    personal file of the same name, and the two drift.

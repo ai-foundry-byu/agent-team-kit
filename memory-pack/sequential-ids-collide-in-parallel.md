@@ -8,7 +8,7 @@ metadata:
 Any workflow that assigns the **next number in a monotonic sequence** breaks when two agents
 do it at once. The classic case is database migrations: two agents both write `0290_*.sql`,
 and at apply time the second file's DDL runs but the ledger INSERT fails
-(`duplicate key ... (version)=(0290) already exists`) and ABORTS — so every later migration
+(`duplicate key ... (version)=(0290) already exists`) and ABORTS, so every later migration
 never applies. The same hazard hits any ordered, numbered artifact (fixtures, seed files,
 sequentially named docs).
 

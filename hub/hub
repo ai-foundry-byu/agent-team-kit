@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# hub — dispatcher for your ~/hubs cockpits.  See docs/HUB-AND-SPOKES.md.
+# hub: dispatcher for your ~/hubs cockpits.  See docs/HUB-AND-SPOKES.md.
 #
 # A "hub" is a neutral command center: it holds config + a launch script and anchors ONE
 # memory brain (keyed to its path). Your real content lives in spokes elsewhere, mounted
 # by the hub's launch script via --add-dir. Launch only through this dispatcher so the base
-# — and therefore the brain — is always the hub, never a content folder.
+# (and therefore the brain) is always the hub, never a content folder.
 #
 #   hub                    list your hubs
 #   hub ls                 list your hubs

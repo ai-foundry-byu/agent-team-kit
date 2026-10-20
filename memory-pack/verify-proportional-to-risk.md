@@ -14,7 +14,7 @@ bugs. Match the effort to the failure modes the diff can hide.
 
 **How to apply:** scale verification to risk.
 - **Check only, then commit:** copy/placeholder/tooltip swaps, class-name tweaks, obvious
-  one-liners — anything whose effect is fully legible in the diff.
+  one-liners: anything whose effect is fully legible in the diff.
 - **Verify live (browser/behavior):** new layouts, state transitions, interaction changes,
   data-loading, anything with a failure mode you can't predict from the diff.
 

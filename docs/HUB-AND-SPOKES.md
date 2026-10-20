@@ -6,7 +6,7 @@ project spans, and where you launch Claude from** so its memory and its file acc
 where you want them. Small, transferable, and the thing to teach someone first.
 
 > **The one-line version:** pick one neutral folder as your command center, launch every
-> session from there, and reach all your real content — code, docs, drives — as *spokes*
+> session from there, and reach all your real content (code, docs, drives) as *spokes*
 > mounted with `--add-dir`. Never make a content folder the base.
 
 ---
@@ -21,7 +21,7 @@ Ownership and audience scatter them on purpose:
 - **Institutional / official** docs live wherever your org governs them (OneDrive, Box…).
 - **Private** material lives in an account nobody can revoke on you.
 
-That scattering is not a mess to clean up — it's a constraint to design around. Meanwhile
+That scattering is a constraint to design around, so leave it in place. Meanwhile
 Claude Code ties two things to **the directory you launch it in**:
 
 1. **Memory.** Your file-based memory ("the brain") is keyed to the launch directory.
@@ -37,12 +37,12 @@ The hub-and-spokes pattern makes that decision on purpose, once.
 > **The base directory is a command center, not a content location. Separate the brain
 > from the content.**
 
-The base (the **hub**) holds only configuration and anchors the memory. All content —
-**including code** — is a **spoke**, living in its natural home and mounted with
+The base (the **hub**) holds only configuration and anchors the memory. All content,
+**including code**, is a **spoke**, living in its natural home and mounted with
 `--add-dir`. Code is not special; it's just the spoke you happen to version.
 
 ```
-~/hubs/<project>/          THE HUB — base, memory anchor, launch point. No content.
+~/hubs/<project>/          THE HUB: base, memory anchor, launch point. No content.
   ├── CLAUDE.md            the routing map (self-orients every session)
   └── launch               cd's here, then mounts the spokes
         │  one brain, always
@@ -54,7 +54,7 @@ The base (the **hub**) holds only configuration and anchors the memory. All cont
 
 ## Why the base must be neutral (and never move)
 
-- **One brain by construction.** You never `cd` into the hub to *work* — only to launch —
+- **One brain by construction.** You never `cd` into the hub to *work* (only to launch),
   so you're never tempted to start a session from inside a content folder and fork off a
   second empty brain. Fragmentation becomes structurally impossible.
 - **The memory key is a path.** Because the brain is keyed to the base's path, a base that
@@ -65,13 +65,13 @@ The base (the **hub**) holds only configuration and anchors the memory. All cont
   that outlives every repo and drive) and reach everything else as spokes.
 
 **Rule:** pick the hub's path once and never move it. Renaming or relocating a hub orphans
-its brain (you can migrate it — copy `~/.claude/projects/<encoded-old-path>/` to the new
-key — but avoid needing to).
+its brain (you can migrate it by copying `~/.claude/projects/<encoded-old-path>/` to the new
+key, but avoid needing to).
 
 ## Organize spokes by privacy ring, not by tool
 
 GitHub-vs-Drive-vs-OneDrive are *media*, not categories. The axis that matters is **who is
-allowed to see a thing**. Sort spokes into rings — private → team → external → public — and
+allowed to see a thing**. Sort spokes into rings (private → team → external → public) and
 mount only the rings a given session should touch. In particular, **fence sensitive spokes
 out of the default mount** and opt them in per-run:
 
@@ -85,8 +85,8 @@ Two layers of access behave differently:
 
 | Tool | Scoped to hub + `--add-dir`? |
 |---|---|
-| File tools (Read/Edit/Grep/Glob) | **Yes** — they refuse paths outside the mounted dirs. |
-| **Bash** (`cat`, `find`, …) | **No** — Bash can read anything your OS user can. |
+| File tools (Read/Edit/Grep/Glob) | **Yes**: they refuse paths outside the mounted dirs. |
+| **Bash** (`cat`, `find`, …) | **No**: Bash can read anything your OS user can. |
 
 Normally Bash **prompts** before running, so a stray reach-outside is caught. But
 `--dangerously-skip-permissions` removes that prompt. So:
@@ -108,11 +108,11 @@ simply isn't synced to this machine, so the bytes aren't reachable at all.
 ## The container: `~/hubs/`
 
 Once you have more than one project, put every hub under one container so the pattern has a
-home — a place for a shared template and a single dispatcher.
+home: a place for a shared template and a single dispatcher.
 
-**Name the container for what it holds — cockpits, not "projects."** Call it `~/hubs/`
+**Name the container for what it holds: cockpits, not "projects."** Call it `~/hubs/`
 (or `~/cockpits/`), *not* `~/projects/`. "Projects" quietly tells you the project lives
-there, and you'll start dropping content into the hub — re-mixing brain and content, the
+there, and you'll start dropping content into the hub, re-mixing brain and content, the
 one thing this pattern exists to prevent. One level deep is enough: `~/hubs/<name>`.
 
 The bundled `hub` dispatcher gives you:
@@ -126,8 +126,8 @@ hub <name> --add-dir <path>   # add a fenced spoke for one run
 
 ## How this composes with the rest of the kit
 
-The hub sets the **project frame** — the base (and thus the brain) and which folders are in
-scope. The kit's session launchers (`cs`, `wt`, `cockpit`) set the **session frame** — its
+The hub sets the **project frame**: the base (and thus the brain) and which folders are in
+scope. The kit's session launchers (`cs`, `wt`, `cockpit`) set the **session frame**: its
 name and whether it runs in a worktree. They stack: run `cs <name>` or `wt <name>` from
 inside a hub and you get a named, worktree-isolated session *within* the hub's frame. Hubs
 decide *where and over what*; the launchers decide *how many and how isolated*.
@@ -154,7 +154,7 @@ write the `CLAUDE.md` routing map, and you're working.
   Bash can read outside the mounted spokes. If you need a guarantee, keep prompts on, or
   isolate at the OS level (separate account / unsynced folder).
 - **The brain lives outside the hub.** Memory is under `~/.claude/projects/<encoded-path>/`,
-  keyed to the base path — not inside the hub folder. Back up `~/.claude` if the brain
+  keyed to the base path, not inside the hub folder. Back up `~/.claude` if the brain
   matters, and don't move the hub.
 - **This organizes access; it doesn't secure secrets.** A mounted spoke with credentials in
   it is readable like any other file. Ring discipline reduces *what's in scope*; it is not

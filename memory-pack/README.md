@@ -1,4 +1,4 @@
-# Memory pack — portable, project-agnostic memories
+# Memory pack: portable, project-agnostic memories
 
 A curated set of hard-won lessons from building real software with parallel Claude Code
 agents, **generalized** so they seed any project's memory brain. They are the human-and-agent
@@ -9,7 +9,7 @@ communication conventions (project-neutral, not tied to any one person).
 
 Each file is one memory in Claude Code's memory format: YAML frontmatter (`name`,
 `description`, `metadata.type`) then a short body with **Why** and **How to apply**. They
-are deliberately stack-agnostic — where a stack detail helps, it appears as "e.g." not as a
+are deliberately stack-agnostic: where a stack detail helps, it appears as "e.g." not as a
 requirement. Several reinforce a kit artifact and link to it; the memory is the *habit*, the
 doc/hook is the *mechanism*.
 
@@ -17,12 +17,12 @@ doc/hook is the *mechanism*.
 
 | Memory | The lesson in one line |
 |---|---|
-| `never-amend-on-shared-main` | Never `--amend`/rebase on a shared branch under parallel agents — a sibling may have moved HEAD. |
+| `never-amend-on-shared-main` | Never `--amend`/rebase on a shared branch under parallel agents; a sibling may have moved HEAD. |
 | `commit-pathspec-uses-working-tree` | `git commit -- <path>` commits the working tree of those paths, not your staged index. |
 | `format-only-touched-files` | Never run a whole-repo formatter; format only the files you touched. |
 | `sequential-ids-collide-in-parallel` | Parallel agents grab the same next number in any monotonic sequence (migrations, fixtures). |
 | `run-your-own-dev-server` | Never trust the default port; run your own, read the real bound port, kill only your PID. |
-| `verify-with-the-real-build` | The fast typecheck can pass while the real build/deploy fails — build before pushing. |
+| `verify-with-the-real-build` | The fast typecheck can pass while the real build/deploy fails; build before pushing. |
 | `verify-proportional-to-risk` | Scale verification to risk: typecheck trivial copy, browser-verify behavior/layout. |
 | `keep-a-small-green-critical-suite` | Test the *existing* behavior a change could break, not just the new code; gate a tiny @critical suite. |
 | `develop-against-a-disposable-copy` | Never point local dev at the production datastore once real users exist. |
