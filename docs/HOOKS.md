@@ -13,10 +13,11 @@ Everything shares one piece of state: a coordination directory at `.git/.wg-agen
 
 ## The wiring: `.claude/settings.json`
 
-This file is what makes the Claude Code hooks active. Each entry binds a lifecycle event (and, for tool hooks, a tool matcher) to a command. The kit registers four:
+This file is what makes the Claude Code hooks active. Each entry binds a lifecycle event (and, for tool hooks, a tool matcher) to a command. The kit registers five:
 
 ```jsonc
 SessionStart  -> dev-port.mjs            // assign a dev port
+SessionStart  -> team-memory.mjs         // load the tracked team memory
 PreToolUse/Bash -> bash-guard.sh         // guard every shell command
 PostToolUse/Edit|Write -> file-size-nudge.mjs  // in-session arch-guard preview
 SessionEnd    -> session-release.mjs     // free the lock + port
