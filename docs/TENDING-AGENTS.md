@@ -9,7 +9,7 @@ Verbose mode shows far more of each session's activity (tool calls, reasoning, w
 - **Global default** (every session): set `"verbose": true` in `~/.claude/settings.json`. The `--verbose` flag overrides this per session.
 - **Per session:** `claude --verbose`.
 
-(The kit's setup sets the global default for you.)
+The kit does not touch your personal Claude Code settings, so set the global default yourself, once per machine: add the line above to `~/.claude/settings.json` (create the file if it does not exist), or turn on verbose output from `/config` inside a session.
 
 ## 2. Remote control: tend agents from the Claude app
 
