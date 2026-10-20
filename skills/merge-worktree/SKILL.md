@@ -9,7 +9,7 @@ In worktree mode, workers run in their own git worktrees on their own branches a
 
 ## Input
 
-A worktree/branch name (e.g. `grading-fix`), or "all" to integrate every finished worktree. If you're unsure which exist, run `git worktree list` first.
+A worker's name (e.g. `grading-fix`, as passed to `wt`) or its branch name, or "all" to integrate every finished worktree. `wt <name>` runs `claude --worktree <name>`, which creates the branch `worktree-<name>` (worktree at `.claude/worktrees/<name>`), so a bare name maps to the branch `worktree-<name>`. Confirm the branch with `git worktree list`; if you're unsure which workers exist, run it first.
 
 ## Procedure
 

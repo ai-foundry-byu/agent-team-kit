@@ -49,13 +49,16 @@ Then:
 
 ```bash
 cockpit              # the dashboard: a NAMED session in the main checkout (run from repo root)
-wt grading-fix       # a worker: new worktree on branch `grading-fix` + a NAMED session in it,
+wt grading-fix       # a worker: new worktree at .claude/worktrees/grading-fix on branch
+                     #   `worktree-grading-fix` + a session NAMED `grading-fix` in it,
                      #   permissions skipped, equals:
                      #   claude --worktree grading-fix --name grading-fix --dangerously-skip-permissions
 wtls                 # list active worktrees + branches
 ```
 
 Every launcher auto-sets a session **name** (shown in `/resume` and the terminal title) and skips permissions. **Integration is not a shell command**, from the cockpit, just tell Claude "integrate grading-fix" and it runs the `merge-worktree` skill (clean-tree check, conflict surfacing, prune, and it stops short of pushing).
+
+`wt` passes the name straight to `claude --worktree`, so the worktree path and branch name are Claude Code's own: the worktree lands at `.claude/worktrees/<name>` and the branch is `worktree-<name>`. The session name is `<name>` as typed. When you integrate, you can refer to a worker by either form; the `merge-worktree` skill resolves the branch from `git worktree list`.
 
 (Tip: `wt grading-fix --tmux` puts the worker in its own tmux session; extra flags pass through, e.g. `wt grading-fix --model opus`.)
 
@@ -68,7 +71,7 @@ This matters in **both** modes, even on stay-on-main, name every agent with `cs 
 ### The integration loop
 
 1. **Cockpit up.** Pinned terminal: `cockpit`. This is where you watch and integrate.
-2. **Fire workers.** New terminal per task: `wt fix-citations`, `wt rubric-copy`, … each gets an isolated worktree + session and goes to work. Name them for the task, that name becomes the branch you'll merge.
+2. **Fire workers.** New terminal per task: `wt fix-citations`, `wt rubric-copy`, … each gets an isolated worktree + session and goes to work. Name them for the task; the branch you'll merge is `worktree-<name>`.
 3. **Workers commit to their branches.** They blanket-stage and commit freely (their tree is their own; the guard relaxes). They do **not** merge or push.
 4. **Integrate from the cockpit** as each finishes: tell the cockpit Claude "integrate fix-citations" (the `merge-worktree` skill). It verifies a clean tree, merges into `main`, surfaces any conflict instead of guessing, and prunes the worktree. Disjoint work merges trivially; overlapping work becomes a conflict you resolve there.
 5. **Ship.** When the merged work is ready, `/push` from the cockpit (the one deliberate, paid act).

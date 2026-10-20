@@ -18,9 +18,10 @@
 # every other terminal is `wt <name>` (a worker in its own worktree).
 # Stay-on-main mode: use `cs <name>` for each named agent in the shared tree.
 
-# wt <name>, WORKER: a fresh git worktree on branch <name> + a session named the
-# same, permissions skipped. Your per-task terminal (worktree mode).
-#   wt grading-fix     # branch AND session both "grading-fix"
+# wt <name>, WORKER: a fresh git worktree + a session named <name>, permissions
+# skipped. Your per-task terminal (worktree mode). Claude Code's --worktree puts
+# the worktree at .claude/worktrees/<name> on a new branch worktree-<name>.
+#   wt grading-fix     # session "grading-fix", branch "worktree-grading-fix"
 wt() {
   if [ -z "${1:-}" ]; then echo "usage: wt <name> [claude args...]"; return 1; fi
   local name="$1"; shift
