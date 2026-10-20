@@ -26,8 +26,9 @@ exact commit.
 - CI triggers on tags for deploys, on branches only for verification.
 - Push both refs atomically when tagging (`git push --atomic origin main <tag>`), so a
   rejected main cannot let a production tag land on a commit that is not on main.
-- Reach production only through one skill (ship or promote) that bumps the version and
-  writes the notes; undo through one (rollback) that swaps the container back.
+- Reach production only through one skill (push or promote) that bumps the version and
+  writes the notes; undo by redeploying the previous release (the host's rollback, or
+  re-running the previous tag's CI run), then revert and release.
 - See the kit's `docs/RELEASE-PIPELINE.md`, `docs/RELEASE-FLAGS-SPEC.md` and
   [[promote-the-staged-commit]]. This supersedes the push-deploys premise of
   [[commit-freely-never-push]] wherever the pipeline deploys on tags.

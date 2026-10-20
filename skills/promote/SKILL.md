@@ -1,18 +1,18 @@
 ---
 name: promote
-description: Ship to production exactly the build that staging is serving, not whatever main holds now. Finds staging's commit, checks it passed CI and that nothing destructive is pending, then releases THAT commit (version bump, notes, tag, deploy, smoke) and merges the release back into main. Use when the user says "promote", "/promote", "promote staging", "ship what's on staging", or "send the staged build to prod". For releasing the newest work on main use /ship.
+description: Ship to production exactly the build that staging is serving, not whatever main holds now. Finds staging's commit, checks it passed CI and that nothing destructive is pending, then releases THAT commit (version bump, notes, tag, deploy, smoke) and merges the release back into main. Use when the user says "promote", "/promote", "promote staging", "ship what's on staging", or "send the staged build to prod". For releasing the newest work on main use /push.
 ---
 
 # promote, ship the build you rehearsed
 
 `/stage` puts a build on staging; people try it; `/promote` sends THAT build to
-production. `/ship` releases HEAD, so anything that landed on `main` after the
+production. `/push` releases HEAD, so anything that landed on `main` after the
 rehearsal would ride along untested. `/promote` releases the staged commit and
 nothing newer. See `docs/RELEASE-PIPELINE.md`.
 
 When to use which:
 
-- **`/ship`** (road A): the newest work on `main`, including anything a
+- **`/push`** (road A): the newest work on `main`, including anything a
   release flag keeps dark.
 - **`/stage` then `/promote`** (road B): the BUILD needed rehearsing. A
   deploy-time change (migration, infrastructure, dependencies), or a change
@@ -57,13 +57,13 @@ git log --oneline "$PROD..$STAGED"          # goes out: the rehearsed build
 git log --oneline "$STAGED..origin/main"    # stays behind
 ```
 
-- **`main` has not moved**: the staged commit is the tip. Run `/ship` from its
+- **`main` has not moved**: the staged commit is the tip. Run `/push` from its
   migrations step; it is the same release.
 - **`main` has moved**: ask ONE question with the second list shown. Promote
   the staged build alone (recommended when that list holds a deploy-time
   change, or anything not behind a flag that could do irreversible harm
   outside the team), or ship all of `main` with
-  `/ship`.
+  `/push`.
 
 ## 3. Build the release in a temporary worktree
 
@@ -74,7 +74,7 @@ WT="$(mktemp -d)/promote"
 git worktree add --detach "$WT" "$STAGED"
 ```
 
-Inside `$WT`, do `/ship`'s migrations, version bump, release notes and release
+Inside `$WT`, do `/push`'s migrations, version bump, release notes and release
 commit, with one difference: the notes range ends at the staged commit.
 
 - Apply migrations FROM the worktree, so only the migrations the rehearsed
@@ -126,4 +126,4 @@ run the same code, so no re-stage is needed.
 
 The staging and prod URLs and their status endpoint shape, the CI workflow
 name, the migrations directory and migrate command, the smoke script, the
-version files and release-notes file, and your `/ship` steps it reuses.
+version files and release-notes file, and your `/push` steps it reuses.

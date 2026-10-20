@@ -18,11 +18,11 @@ Below, each example, what it does, why the pattern is valuable, and what is proj
 
 ## `push`, wrap a dangerous, irreversible action in a guarded procedure
 
-**What it does.** Turns "ship it" into a full release procedure: it figures out what has shipped since the last release, writes customer-facing release notes, bumps the version, commits just those files, and *then* pushes. It encodes hard-won guardrails: stage only release files, never sweep in unrelated work, and never chain commit-tag-push in one command (because a blocked commit would still let the tag and push fire, publishing the wrong thing and costing a second paid build).
+**What it does.** Turns "ship it" into road A of the [release pipeline](./RELEASE-PIPELINE.md): release HEAD of `main` straight to production. It lands your own outstanding work, syncs, applies production migrations, figures out what has shipped since the last release, writes customer-facing release notes, bumps the version, commits just those files, tags `v<version>`, and pushes `main` and the tag together with `--atomic` (the final tag is what deploys production; a plain push to `main` runs CI only). Then it watches the deploy, smokes the deployed commit, and reports what skipped staging. It encodes hard-won guardrails: stage only release files, never sweep in unrelated work, and never chain commit-tag-push in one command (because a blocked commit would still let the tag and push fire, deploying the wrong commit). Use it for small, safe work; riskier work goes through `stage` and `promote`.
 
 **Why the pattern matters.** Some actions are high-stakes and irreversible: a production deploy, a release, a data migration. Those are exactly the actions you do *not* want an agent improvising. A skill turns the risky action into a checklist with the failure modes pre-empted. The general lesson: **for any action that is expensive to get wrong, write the skill that makes the safe path the only path.**
 
-**Project-specific to swap.** Vercel as the deploy trigger, `src/lib/content/releases.ts` as the notes file, the version-in-package.json convention.
+**Project-specific to swap.** `src/lib/content/releases.ts` as the notes file, the version files, the check and migrate commands, the status endpoints, the CI workflow name and the smoke script.
 
 ---
 

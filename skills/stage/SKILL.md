@@ -1,6 +1,6 @@
 ---
 name: stage
-description: Put a build on staging, the private twin of production, where no customer can see it. Applies pending migrations to the staging database, checks parity with prod, pushes a release-candidate tag for the next version, watches the deploy and smokes the deployed commit. Use when the user says "stage it", "/stage", "put it on staging", "deploy to staging", "I want to demo this", or "let me look at it before it ships". For production use /ship or /promote.
+description: Put a build on staging, the private twin of production, where no customer can see it. Applies pending migrations to the staging database, checks parity with prod, pushes a release-candidate tag for the next version, watches the deploy and smokes the deployed commit. Use when the user says "stage it", "/stage", "put it on staging", "deploy to staging", "I want to demo this", or "let me look at it before it ships". For production use /push or /promote.
 ---
 
 # stage, the dress rehearsal

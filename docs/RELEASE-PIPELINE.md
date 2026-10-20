@@ -12,8 +12,9 @@ drive; this doc says how a build moves between environments. It pairs with
 [`RELEASE-FLAGS-SPEC.md`](./RELEASE-FLAGS-SPEC.md) (releasing a deployed feature
 by audience), and the skills [`stage`](../skills/stage/SKILL.md),
 [`promote`](../skills/promote/SKILL.md) and
-[`remove-flag`](../skills/remove-flag/SKILL.md). It supersedes the older
-[`push`](../skills/push/SKILL.md) model, where a push to `main` was a paid
+[`remove-flag`](../skills/remove-flag/SKILL.md), plus
+[`push`](../skills/push/SKILL.md), which releases HEAD to production under this
+pipeline. It supersedes the older model, where a push to `main` was a paid
 production deploy.
 
 Stack-agnostic. The reference is GitHub Actions + a container host (Railway,
@@ -84,22 +85,42 @@ N=$(( $(git tag -l "v$VERSION-rc*" | wc -l) + 1 ))
 An rc gets no version bump and no release notes. A release candidate is not a
 release.
 
-## 4. Four commands, and that is the whole arsenal
+## 4. Three commands, and one manual procedure
 
 | Command | Moves | What it does |
 |---|---|---|
 | `/stage` | a commit to **staging** | commits your own outstanding work, syncs, applies migrations to the STAGING database, checks parity with prod, tags the next rc, pushes atomically, watches the deploy, smokes the commit |
-| `/ship` | **HEAD** to **production** | lands outstanding work, syncs, applies prod migrations, bumps the version, writes release notes, tags, pushes atomically, watches, smokes, notifies bug reporters, reports what skipped staging and the flag report |
+| `/push` | **HEAD** to **production** | lands outstanding work, syncs, applies prod migrations, bumps the version, writes release notes, tags, pushes atomically, watches, smokes, notifies bug reporters, reports what skipped staging and the flag report |
 | `/promote` | **the staged commit** to production | the same release, built on the exact commit staging is serving instead of HEAD |
-| `/rollback` | production back one | redeploys the previous container (no rebuild, no version bump), re-smokes; `git revert` gets the bad code off `main` afterwards |
+| rollback (manual, no skill bundled) | production back one | see below |
 
-Invoking any of them is the authorization. They do not ask "are you sure";
-their stop conditions are genuine blockers only (a destructive migration, a
-rebase conflict, CI red, a smoke failure).
+Invoking any of the three skills is the authorization. They do not ask "are
+you sure"; their stop conditions are genuine blockers only (a destructive
+migration, a rebase conflict, CI red, a smoke failure).
+
+**Rolling back is a manual procedure; the kit bundles no `/rollback` skill.**
+Under this pipeline, production runs whatever the last final tag deployed, so
+rolling back means putting production back on the previous release's build.
+Two ways, depending on how fast you need it:
+
+- **Redeploy the previous release.** Either use your host's own rollback to
+  the previous deployment (most container hosts keep it), or re-run the CI
+  run of the previous final tag (`gh run rerun <id>`), which redeploys that
+  commit. No new tag, no version bump. Re-smoke, asserting the previous
+  release's COMMIT. Never move or re-push an existing tag. `main` still holds
+  the bad code, so follow up with the second way before the next release.
+- **Revert and release.** `git revert` the bad commit on `main`, then release
+  it with `/push`. Slower (a full CI run), but `main`, the version and the
+  release notes all stay honest.
+
+A feature behind a release flag needs neither: turn the flag off. If you
+write your own rollback skill, keep it to these steps and its own stop
+conditions (a migration in the bad release that the old code cannot run
+against is the one that bites).
 
 ## 5. Two roads to production
 
-**Road A, straight to prod** (`/ship`). Small, safe or urgent: a copy fix, a
+**Road A, straight to prod** (`/push`). Small, safe or urgent: a copy fix, a
 bug fix with a test, anything a flag keeps dark.
 
 **Road B, staging first** (`/stage`, people try it, `/promote`). Use it for
@@ -125,7 +146,7 @@ The spec template asks this at spec time, in its Access and release section
 ([`../skills/spec/TEMPLATE.md`](../skills/spec/TEMPLATE.md)), so the road is
 known before the code is written.
 
-`/ship` carries an **advisory road check**. Before tagging, it reads the commit
+`/push` carries an **advisory road check**. Before tagging, it reads the commit
 prod is serving and the commit staging is serving (both from a status
 endpoint), lists the commits going out that were never on staging, and greps
 their changed paths for the road-B kinds (migrations, LMS and email code,
@@ -135,7 +156,7 @@ build alone was wanted.
 
 ## 6. The one rule: promote the exact commit you tested
 
-`/ship` tags HEAD. If anything landed on `main` after you staged, HEAD is not
+`/push` tags HEAD. If anything landed on `main` after you staged, HEAD is not
 what was tested, and the untested commits ride along to production. On a
 shared `main` that moves dozens of times a day, that is the expected case.
 
@@ -218,9 +239,9 @@ commit prefix.
 
 ## 9. Staging behind prod is not a twin
 
-After a road-A `/ship`, staging runs older code than prod. A test there now
+After a road-A `/push`, staging runs older code than prod. A test there now
 proves less than it seems. Re-stage before the next time anyone uses staging;
-`/ship`'s report says staging is behind and offers it. `/promote` has the
+`/push`'s report says staging is behind and offers it. `/promote` has the
 opposite property: afterwards staging and prod run the same code (bar the
 version files), so no re-stage is needed.
 
@@ -254,6 +275,6 @@ costs another deploy: get them right in one pass.
 ## The loop, in one line
 
 Commit and push `main` freely (it deploys nothing), `/stage` when the build
-needs rehearsing, `/promote` the exact commit that was rehearsed, `/ship` HEAD
-when nothing needed rehearsal, release features by flag, and `/rollback` when
-the smoke says so.
+needs rehearsing, `/promote` the exact commit that was rehearsed, `/push` HEAD
+when nothing needed rehearsal, release features by flag, and roll back by hand
+(section 4) when the smoke says so.
