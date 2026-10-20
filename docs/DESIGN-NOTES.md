@@ -1,6 +1,6 @@
 # Design notes: why each piece exists
 
-This is the reasoning behind the kit, so you can adapt it rather than cargo-cult it. The full conversation it came from is in `conversation-transcript.jsonl`.
+This is the reasoning behind the kit, so you can adapt it rather than cargo-cult it. A readable, redacted narrative of the session it came from is in [`ORIGIN-CONVERSATION.md`](./ORIGIN-CONVERSATION.md); the raw transcript is kept out of this repo on purpose (see the README).
 
 ## The framing decision: stay on `main`, don't reach for worktrees
 
