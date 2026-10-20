@@ -12,7 +12,28 @@ gh repo clone ai-foundry-byu/agent-team-kit /tmp/agent-team-kit
 rm -rf /tmp/agent-team-kit
 ```
 
-The kit is run *against* your repo, not nested inside it. `install.sh` is idempotent and safe on a built-out repo: it copies the hooks, skills, `bootstrap.sh`, and the feedback spec into place; appends the `.claude` share rules to `.gitignore` and the concurrent-agents section to `CLAUDE.md` (guarded, never duplicating); sets `core.hooksPath`; and never touches your source.
+The kit is run *against* your repo, not nested inside it. `install.sh` is idempotent and safe on a built-out repo, and never touches your source. What it installs:
+
+| Lands at | What | On re-run |
+|---|---|---|
+| `scripts/hooks/*` | every hook script: `agent-coord.mjs`, `arch-check.mjs`, `bash-guard.mjs`, `bash-guard.sh`, `dev-port.mjs`, `file-size-budget.mjs`, `file-size-nudge.mjs`, `import-boundaries.mjs`, `session-release.mjs`, `team-memory.mjs` | overwritten |
+| `.githooks/post-merge` | migration-awareness git hook | overwritten |
+| `.githooks/pre-commit`, `.githooks/pre-push` | the git gates (architecture guard before a commit, check and tests before a push) | copied only if absent; an existing one is flagged for a hand merge |
+| `.claude/settings.json` | Claude Code hook wiring | copied only if absent; an existing one is flagged for a hand merge |
+| `.claude/skills/*` | all thirteen skills (see [`SKILLS.md`](./SKILLS.md)) | overwritten |
+| `.claude/team-memory/` | team memory, seeded from the kit's `memory-pack/` (its `README.md` is the pack's `TEAM-MEMORY-README.md`) | seeded once; left alone if the folder exists |
+| `bootstrap.sh` | collaborator setup | overwritten |
+| `worktree-commands.sh` | the `wt` / `cockpit` / `cs` / `wtls` launchers | overwritten |
+| `docs/FEEDBACK-LOOP-SPEC.md`, `docs/SIDEBAR-SPEC.md`, `docs/DRIVING-THE-APP.md`, `docs/MOCKUP-SHELLS-SPEC.md` | build specs and the app-driving guide | overwritten |
+| `docs/RELEASE-PIPELINE.md`, `docs/STAGING-TWIN-SPEC.md`, `docs/RELEASE-FLAGS-SPEC.md` | the release pipeline docs the `push`, `stage`, `promote` and `remove-flag` skills point at | overwritten |
+
+It also **appends**, guarded so a re-run never duplicates:
+
+- to `.gitignore`: the `.claude` share rules (`.claude/*`, `!.claude/settings.json`, `!.claude/skills/`; if you already have a blanket `.claude/` ignore it tells you what to change and leaves the file alone), `.mockups/`, `.specs/`, and `!.claude/team-memory/`;
+- to `CLAUDE.md`: three sections, the concurrent-agents rules (stay-on-main), working discipline, and mockups and design iteration.
+
+And it sets `core.hooksPath = .githooks`.
+
 
 ## Customize for your stack
 
@@ -24,7 +45,7 @@ The defaults assume Supabase + pnpm. Edit:
 
 ## What gets committed vs stays local
 
-- **Committed (shared):** `scripts/hooks/*`, `.githooks/*`, `.claude/settings.json`, `.claude/skills/*`, `docs/FEEDBACK-LOOP-SPEC.md`, the CLAUDE.md section, the `.gitignore` lines.
+- **Committed (shared):** everything in the table above (`scripts/hooks/*`, `.githooks/*`, `.claude/settings.json`, `.claude/skills/*`, `.claude/team-memory/`, `bootstrap.sh`, `worktree-commands.sh`, the copied `docs/`), the CLAUDE.md sections, the `.gitignore` lines.
 - **Local per machine:** `.claude/settings.local.json` (personal config), and `core.hooksPath` (each clone sets it once; `bootstrap.sh` does it).
 - **Never tracked:** `.git/.wg-agent/` coordination state (it lives inside `.git`).
 

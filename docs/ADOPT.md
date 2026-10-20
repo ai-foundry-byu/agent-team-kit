@@ -42,16 +42,27 @@ gh repo clone ai-foundry-byu/agent-team-kit ~/tools/agent-team-kit      # once
 
 Either way, the kit's own `.git` never enters your repo. The installer **copies into logical locations in YOUR repo**:
 
-| Lands at | What |
-|---|---|
-| `scripts/hooks/*` | the coordination hooks |
-| `.githooks/post-merge` | migration-awareness git hook |
-| `.claude/settings.json` | hook wiring (or it flags a merge if you already have one) |
-| `.claude/skills/*` | the skills |
-| `bootstrap.sh` | collaborator setup |
-| `docs/FEEDBACK-LOOP-SPEC.md` | the feedback build spec (so you can build from it) |
+| Lands at | What | On re-run |
+|---|---|---|
+| `scripts/hooks/*` | every hook script: `agent-coord.mjs`, `arch-check.mjs`, `bash-guard.mjs`, `bash-guard.sh`, `dev-port.mjs`, `file-size-budget.mjs`, `file-size-nudge.mjs`, `import-boundaries.mjs`, `session-release.mjs`, `team-memory.mjs` | overwritten |
+| `.githooks/post-merge` | migration-awareness git hook | overwritten |
+| `.githooks/pre-commit`, `.githooks/pre-push` | the git gates (architecture guard before a commit, check and tests before a push) | copied only if absent; an existing one is flagged for a hand merge |
+| `.claude/settings.json` | Claude Code hook wiring | copied only if absent; an existing one is flagged for a hand merge |
+| `.claude/skills/*` | all thirteen skills (see [`SKILLS.md`](./SKILLS.md)) | overwritten |
+| `.claude/team-memory/` | team memory, seeded from the kit's `memory-pack/` (its `README.md` is the pack's `TEAM-MEMORY-README.md`) | seeded once; left alone if the folder exists |
+| `bootstrap.sh` | collaborator setup | overwritten |
+| `worktree-commands.sh` | the `wt` / `cockpit` / `cs` / `wtls` launchers | overwritten |
+| `docs/FEEDBACK-LOOP-SPEC.md`, `docs/SIDEBAR-SPEC.md`, `docs/DRIVING-THE-APP.md`, `docs/MOCKUP-SHELLS-SPEC.md` | build specs and the app-driving guide | overwritten |
+| `docs/RELEASE-PIPELINE.md`, `docs/STAGING-TWIN-SPEC.md`, `docs/RELEASE-FLAGS-SPEC.md` | the release pipeline docs the `push`, `stage`, `promote` and `remove-flag` skills point at | overwritten |
 
-It also **appends** the share rules to `.gitignore` and the concurrent-agents section to `CLAUDE.md` (guarded, never duplicating), and sets `core.hooksPath = .githooks`. It **never touches your source** and is **idempotent** (safe to re-run). Review with `git status` / `git diff`, then commit.
+It also **appends**, guarded so a re-run never duplicates:
+
+- to `.gitignore`: the `.claude` share rules (`.claude/*`, `!.claude/settings.json`, `!.claude/skills/`; if you already have a blanket `.claude/` ignore it tells you what to change and leaves the file alone), `.mockups/`, `.specs/`, and `!.claude/team-memory/`;
+- to `CLAUDE.md`: three sections, the concurrent-agents rules (stay-on-main), working discipline, and mockups and design iteration.
+
+And it sets `core.hooksPath = .githooks`.
+
+It **never touches your source** and is **idempotent** (safe to re-run). Review with `git status` / `git diff`, then commit.
 
 ---
 
@@ -63,7 +74,7 @@ The common case: a built-out repo where you want to harden how you work with age
 
 1. From your project root, run the pull-it-in block above.
 2. Review the diff and commit.
-3. Customize for your stack if you're not on Supabase + pnpm (3 spots; the installer lists them).
+3. Customize for your stack if you're not on Supabase + pnpm (the installer's closing message lists the spots; [`SETUP-PROJECT.md`](./SETUP-PROJECT.md) explains each).
 4. Start a **fresh** Claude Code session. You now have per-session dev ports plus the git / schema / psql guards protecting you from your **own** parallel agents.
 5. (optional) Build the feedback loop: tell your agent *"build the feedback loop from `docs/FEEDBACK-LOOP-SPEC.md` for our stack."* Review, commit.
 
@@ -81,7 +92,7 @@ The collaborator-only pieces lie dormant until you add someone, so there is noth
 
 You already did path A while solo. To bring someone on:
 
-1. Confirm the shared artifacts are committed: `.claude/settings.json`, `.claude/skills/`, `scripts/hooks/`, `.githooks/`, the CLAUDE.md section, the `.gitignore` lines (the installer set these up). **Push.**
+1. Confirm the shared artifacts are committed: `.claude/settings.json`, `.claude/skills/`, `.claude/team-memory/`, `scripts/hooks/`, `.githooks/`, `bootstrap.sh`, `worktree-commands.sh`, the copied `docs/`, the CLAUDE.md sections, the `.gitignore` lines (the installer set these up). **Push.**
 2. Purge anything sensitive from history first if needed.
 3. The new person clones the **project** and runs `./bootstrap.sh` (sets their git hooks path; prints the two manual bits: personal config in `settings.local.json`, and start a fresh session).
 4. Switch on the human agreements: both read the collaboration model. The shifts from solo are: stay in lanes, pull-rebase often, announce migrations, agree who cuts release tags.
@@ -111,4 +122,4 @@ The full pattern, the privacy-ring model, and the honest limits are in
 
 ## Updating later
 
-Re-run the pull-it-in block any time to refresh the hooks, skills, and spec to the latest kit version (it's idempotent). One caveat: re-running **overwrites the hook scripts**, so if you've customized `bash-guard.mjs` or `dev-port.mjs` for your stack, keep those tweaks minimal and re-apply them after an update (or fork the kit and install from your fork).
+Re-run the pull-it-in block any time to refresh the hooks, skills, and spec to the latest kit version (it's idempotent). One caveat: re-running **overwrites everything marked "overwritten" in the table above**: the hook scripts, `.githooks/post-merge`, the skills, `bootstrap.sh`, `worktree-commands.sh` and the copied docs. If you've customized `bash-guard.mjs`, `dev-port.mjs`, `file-size-budget.mjs`, the `post-merge` migrations path or a skill for your project, keep those tweaks minimal and re-apply them after an update (or fork the kit and install from your fork). `.githooks/pre-commit`, `.githooks/pre-push`, `.claude/settings.json` and `.claude/team-memory/` are never overwritten.
