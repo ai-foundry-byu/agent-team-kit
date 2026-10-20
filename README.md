@@ -1,10 +1,24 @@
 # Agent Team Kit
 
-**How a two-person AI-native team, or a solo developer running many Claude Code agents at once, works in parallel without stepping on each other.**
+**A working setup for building real software with Claude Code agents: one person or a small team directing many agents, from the first mockup to a release and the bug reports that come back.**
 
-An "AI-native team" here means a small team where most code is written by Claude Code agents, often several at once per person. That style is fast, but those agents collide on things that have nothing to do with the code: dev-server ports, the shared database, and the git working tree. This kit is the tooling, **the two ways to run it**, and the working agreements that make parallel agents smooth.
+It started as a fix for parallel agents colliding on ports, the database, and the git tree. It now covers most of the loop around the code. The highlights:
 
-**Read this as three documents in one: an overview, a decision guide, and a setup guide.** It teaches the way of working (why agents collide, the **two modes** that resolve it and how to choose between them, and the human agreements that go with them), helps you pick a mode, then gets it running. If you only want to install it, jump to [Setup](#setup); if you're deciding how to work, read top to bottom. The deep "why" behind every artifact is in [`docs/DESIGN-NOTES.md`](./docs/DESIGN-NOTES.md), and a readable narrative of the session it was designed in is in [`docs/ORIGIN-CONVERSATION.md`](./docs/ORIGIN-CONVERSATION.md).
+| Highlight | What it gives you | Where it lives |
+|---|---|---|
+| **Concurrent agents** | Run several Claude Code agents on one app at the same time without them colliding on files, ports, or the database | The two modes below; `dev-port` and `bash-guard` hooks; `cs` / `wt` / `cockpit` launchers; [`WORKTREE-MODE.md`](./docs/WORKTREE-MODE.md) |
+| **Fast design loops** | Agents produce clickable, high-fidelity mockups and multi-screen prototypes, frozen from the real app at desktop or phone width, that you iterate on in minutes before building | [`/mockup`](./skills/mockup/SKILL.md); [`MOCKUP-SHELLS-SPEC.md`](./docs/MOCKUP-SHELLS-SPEC.md) |
+| **Tending agents from anywhere** | Start a batch of agents, step away, and check in on them from your phone | [`TENDING-AGENTS.md`](./docs/TENDING-AGENTS.md); the launchers start every session with Remote Control |
+| **Hooks and guardrails** | Automatic checks that keep agent-written code clean and stop risky commands before they run | [`HOOKS.md`](./docs/HOOKS.md): git guard, schema lock, file-size ratchet, import boundaries, pre-commit and pre-push gates |
+| **Memory** | Preferences and project context that carry from one session to the next, and from one teammate to another | [`memory-pack/`](./memory-pack/README.md); `.claude/team-memory/`; [`/share-memory`](./skills/share-memory/SKILL.md) |
+| **Bug feedback loops** | A one-click in-app bug report that hands a coding agent everything it needs to fix the problem | [`FEEDBACK-LOOP-SPEC.md`](./docs/FEEDBACK-LOOP-SPEC.md); [`/fix-bug`](./skills/fix-bug/SKILL.md) |
+| **Agents that test your app** | Agents click through your app like a user, critique the experience, and file what they find | [`/ux-critique`](./skills/ux-critique/SKILL.md); [`WALKS-AND-SWEEPS-SPEC.md`](./docs/WALKS-AND-SWEEPS-SPEC.md); [`CRAWLERS-SPEC.md`](./docs/CRAWLERS-SPEC.md); [`DRIVING-THE-APP.md`](./docs/DRIVING-THE-APP.md) |
+
+Also in the kit: spec-driven builds ([`/spec`](./skills/spec/SKILL.md), [`/build-spec`](./skills/build-spec/SKILL.md)), a release pipeline with a staging twin and release flags ([`RELEASE-PIPELINE.md`](./docs/RELEASE-PIPELINE.md)), "view as" any user ([`IMPERSONATION-SPEC.md`](./docs/IMPERSONATION-SPEC.md)), and hub-and-spokes for projects spread across folders ([`HUB-AND-SPOKES.md`](./docs/HUB-AND-SPOKES.md)).
+
+Several of these are **build specs**: stack-agnostic documents detailed enough that you hand one to a coding agent and it builds the feature in your stack. The kit ships the spec where a feature has to fit your app, and ships code (hooks, skills, scripts) where it does not.
+
+**How to read the rest of this file.** It starts where the kit started, with running agents in parallel: why they collide, the **two modes** that resolve it, and the human agreements that go with them. Then it covers setup. If you only want to install it, jump to [Setup](#setup). The deep "why" behind every artifact is in [`docs/DESIGN-NOTES.md`](./docs/DESIGN-NOTES.md), and a readable narrative of the session it was designed in is in [`docs/ORIGIN-CONVERSATION.md`](./docs/ORIGIN-CONVERSATION.md).
 
 ---
 
