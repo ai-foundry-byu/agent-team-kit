@@ -146,7 +146,9 @@ Installed into $TARGET. Next:
   4. Start a FRESH Claude Code session so the hooks + skills load.
   5. Adding a teammate later? They clone and run ./bootstrap.sh.
   6. Prefer worktrees to stay-on-main? Source worktree-commands.sh for the
-     wt / cockpit / wtmerge commands, see the kit's docs/WORKTREE-MODE.md.
+     wt / cockpit / cs / wtls commands. Integrate a finished worker by saying
+     "integrate <name>" in the cockpit session (the merge-worktree skill).
+     See the kit's docs/WORKTREE-MODE.md.
 
 Pick the full path for your case in docs/ADOPT.md.
 EOF
