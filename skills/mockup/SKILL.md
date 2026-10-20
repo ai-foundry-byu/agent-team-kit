@@ -1,6 +1,6 @@
 ---
 name: mockup
-description: Build a high-fidelity, throwaway HTML mockup the user can judge in a browser, by editing a frozen snapshot of the real surface when one exists, or writing a standalone page when it does not. Use when the user says "mock this up", "/mockup", "show me what X could look like", "try a layout for", "A/B these two options", or before a /spec on a visual change.
+description: Build a high-fidelity, throwaway HTML mockup the user can judge in a browser, by editing a frozen snapshot of the real surface when one exists, or writing a standalone page when it does not; or build a clickable multi-screen prototype with a numbered storyboard for a design round. Use when the user says "mock this up", "/mockup", "show me what X could look like", "try a layout for", "A/B these two options", "prototype", "storyboard", "screen N: change ...", or before a /spec on a visual change.
 ---
 
 # mockup, iterate on the real surface, not a redrawing of it
@@ -23,6 +23,9 @@ team kit) specifies it for any stack. This skill works with or without it:
 - **Shell path:** the project has the freezer (look for `mock:shell` /
   `mock:check` scripts, or `.mockups/_shells/`). Use it for any change to an
   existing surface.
+- **Prototype path:** a design round across several screens, or the user asks
+  for a prototype or storyboard, and the project has `mock:flow`. Every screen
+  frozen and linked; the user walks it and marks it up by screen number.
 - **Fresh path:** no freezer, a brand-new surface, a diagram, or a change so
   structural that little of the frozen layout would survive. Write a standalone
   page (see "Fresh path" below).
@@ -112,6 +115,39 @@ A shell is captured from whatever the account happened to have, usually a full,
 happy state. Most of what users report goes wrong in the **empty and early
 states**, which no snapshot holds. Do not go hunting for a real empty record:
 rewind the captured one with a recipe and layer your idea on top.
+
+## Prototype path: a clickable storyboard
+
+The replacement for a Figma round on an app that already exists.
+
+1. **Build it** from your own dev server: `mock:flow --port <your port>`
+   (add `--mobile` for a phone-width round). It freezes every registered surface
+   into `.mockups/flow/NN-<surface>.html`, rewires the app's links between the
+   screens, and writes a numbered storyboard, `index.html`.
+2. **Serve it and hand over the http link**: run `mock:serve` in the background
+   and give the user `http://127.0.0.1:<port>/flow/`. Not the `file://` path: an
+   editor opens that as source, and the links between screens go nowhere.
+3. **The user walks it and marks it up by number**: "screen 3: move the next
+   action above the stage rail." Edit **that screen's file in place**
+   (`.mockups/flow/03-<surface>.html`), using the shell path's grep, read the
+   range, Edit rules. Links point at file names, so they keep working, and the
+   server sends no-store, so a refresh shows the change. Check each edited screen
+   with `mock:check --shot` and read the screenshot.
+4. **Keep a running list of every change agreed in the round.** It is the punch
+   list for building the round into the app, and the natural input to `/spec`.
+5. **Never re-run `mock:flow` once screens carry edits.** It rebuilds every
+   screen from the app and throws the edits away. Re-run only to start a fresh
+   round after the app itself changed.
+6. **A screen the app does not have yet:** copy the nearest screen to a new
+   number, change it, link to it from where a user would click, and add its card
+   to `index.html` by copying an existing card.
+
+Forms in the prototype do not submit (the flow bar says so), and links to routes
+the prototype lacks say "Not in the prototype yet". Arrow keys step through
+screens; Escape returns to the storyboard.
+
+No `mock:flow` in the project? `docs/MOCKUP-SHELLS-SPEC.md` sections 9 and 10
+specify it; it is a small addition once the shell freezer exists.
 
 ## Fresh path
 

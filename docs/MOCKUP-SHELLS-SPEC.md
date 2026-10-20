@@ -1,6 +1,6 @@
 # Mockup shells, a build spec
 
-A stack-agnostic specification for the small tool behind the [`mockup`](../skills/mockup/SKILL.md) skill: it **freezes a real rendered page into one self-contained, editable HTML file** (a *shell*), so a design mockup becomes a small edit to the real surface instead of a hand-drawn imitation of it.
+A stack-agnostic specification for the small tool behind the [`mockup`](../skills/mockup/SKILL.md) skill: it **freezes a real rendered page into one self-contained, editable HTML file** (a *shell*), so a design mockup becomes a small edit to the real surface instead of a hand-drawn imitation of it. The same freezer, run over every surface, builds a **clickable prototype**: every screen frozen, the app's own links rewired between them, and a numbered storyboard to walk and mark up by screen number. It replaces Figma for design rounds on an app that already exists.
 
 This is a spec, not code. It is grounded in a shipped implementation (about 2,400 lines of TypeScript over Playwright, for a SvelteKit + Tailwind app). Any headless browser works; the reference uses Playwright. It is most effective when an app's styling is concentrated in one or a few stylesheets (Tailwind, CSS modules compiled to one bundle), and still works otherwise.
 
@@ -22,6 +22,8 @@ A screenshot would not do: you cannot edit a picture. The source code would not 
 | `mock:shell --check` | Report which shells are `fresh`, `stale` or missing. |
 | `mock:edit <file> --do <recipe> -o <out>` | Load a file in a headless browser, run a recipe against the DOM, serialize it back. |
 | `mock:check <file> [--shot png]` | Structural checks plus a screenshot. Non-zero exit on a hard failure. |
+| `mock:flow` | Freeze every surface into `.mockups/flow/NN-<surface>.html`, rewire the app's links between the frozen screens, and write a numbered storyboard `index.html`. |
+| `mock:serve` | Serve `.mockups/` over http on 127.0.0.1, so links between screens work in any viewer. |
 
 Plus a registry of surfaces, a recipe helper library, and a recipes folder. Everything under `.mockups/` is gitignored; the tool and the recipes are tracked.
 
@@ -37,7 +39,8 @@ One entry per surface worth shelling:
   route: resolve a real instance (find a real record id in the current database),
   sources: ["src/routes/grade/**", "src/components/rail/**"],   // for staleness
   prepare?: script to run before freezing (open a tab, expand a panel),
-  persona?: sign in as someone other than the default account }
+  persona?: sign in as someone other than the default account,
+  viewport?: "desktop" | "mobile" }
 ```
 
 - **Routes are resolved, not hardcoded.** Reuse whatever already knows how to find a real record (a walk harness's screen catalog, a fixtures module). Two copies of that logic drift immediately.
@@ -48,7 +51,7 @@ One entry per surface worth shelling:
 - **Freeze the local dev server by default**, falling back to production only when none is up, and say which one it got. A mockup is nearly always of a surface you are mid-change on; production is only the last release. Find *this session's* dev server (its assigned port), never silently borrow a sibling agent's, which may be serving a different working tree.
 - **Read-only at the network layer.** Right after sign-in, abort every non-GET request from the page, so a stray click while preparing cannot write to real data.
 - **Cache the sign-in** (a saved browser storage state in a gitignored folder; it is a real credential). Verify it before use, so an expired session falls back to a real sign-in rather than freezing a picture of the login page.
-- **Fixed viewport.** Desktop width (for example 1440), and photographed **tall** (for example 2400), so content the app positions far down the page is in frame.
+- **Fixed viewport per form factor.** Desktop width (for example 1440) by default, and a phone width (for example 390, with a mobile user agent and touch enabled) for a surface or a run marked mobile, since a responsive app renders different markup there. Photograph **tall** (for example 2400), so content the app positions far down the page is in frame. Name mobile captures distinctly (`<surface>.mobile.html`) so the two never overwrite each other.
 
 ## 3. Freeze
 
@@ -108,6 +111,21 @@ An inline `--do 'return mock.$$(".rail span").slice(0,5).map(e => e.outerHTML.sl
 
 Non-zero exit on a hard failure, so it can gate a loop. With no argument, check every mockup in `.mockups/`.
 
+## 9. The prototype (`mock:flow`)
+
+The design-round tool: a clickable, multi-screen prototype of the app, built from the same freezer.
+
+- **Freeze every registered surface** into its own numbered file, `.mockups/flow/NN-<surface>.html`, in registry order. Numbers are how people talk about screens ("screen 4: move the summary above the table"), so keep them stable within a round.
+- **Rewire the app's links.** For each internal `href`, find the surface whose route matches the path. A match becomes a link to that screen's file. No match becomes `href="#"` with the original path kept in a data attribute, so a click can say "Not in the prototype yet: /settings/billing" instead of leaving the prototype.
+- **Inject a small flow bar** on every screen (marked as not part of the app): a link back to the storyboard, previous and next, and "Screen N of M". Left and right arrow keys step through screens and Escape returns to the storyboard. Intercept form submits and say "Prototype: nothing is saved."
+- **Write the storyboard** (`index.html`): one card per screen with a thumbnail, its number, title and surface id, and the screens it links to. Stamp it with when it was frozen and the commit it was frozen from.
+- **A mobile run** (`--mobile`) freezes at the phone viewport into `.mockups/flow-mobile/`, with its own storyboard, so a round can review desktop and phone side by side.
+- **Re-running rebuilds every screen from the app and discards edits.** Say so in the output. Once screens carry edits, they are edited in place; a re-run starts a fresh round.
+
+## 10. Serving (`mock:serve`)
+
+Serve `.mockups/` over http, bound to 127.0.0.1 only, with `Cache-Control: no-store` so a refresh shows the latest edit, and refuse any path outside `.mockups/`. The reason is practical: editors such as VS Code open a `file://` link as source in a tab, so the links between screens go nowhere. Print the `http://127.0.0.1:<port>/flow/` address the user should open.
+
 ---
 
 ## Build checklist
@@ -121,6 +139,8 @@ Non-zero exit on a hard failure, so it can gate a loop. With no argument, check 
 7. `mock:edit` with the helper library and the `_shells/` write guard.
 8. `mock:check` with balance, repair detection, region survival, screenshot.
 9. One state recipe for your most-mocked surface's empty state, as the worked example.
+10. `mock:flow`: numbered screens, rewired links with a "not in the prototype yet" fallback, flow bar, storyboard with thumbnails, optional mobile run.
+11. `mock:serve`: 127.0.0.1 only, no-store, confined to `.mockups/`.
 
 ## Lessons
 
@@ -128,4 +148,6 @@ Non-zero exit on a hard failure, so it can gate a loop. With no argument, check 
 - **Production is the wrong default.** It is only the last release, and the freshness check could not tell.
 - **Capture tall, then pin it.** A short capture put the anchored side content below the fold; a tall capture alone re-collapsed in an ordinary window until height units were pinned.
 - **Fonts fail silently.** The CSP blocked in-page font fetches and the shell quietly rendered in a system font. Fetch assets from Node.
+- **Serve the prototype; do not hand over `file://`.** In an editor, a `file://` link opens the HTML as source, and the prototype looks broken when it is not.
+- **Edits outlive a re-run only if nobody re-runs.** The first round lost its markup to a well-meant `mock:flow` re-run. Print the warning every time.
 - **The insert shim is non-negotiable** on any surface with runtime-positioned content. Without it, the first inserted block slid under the overlays and nobody saw it until someone opened the file.
