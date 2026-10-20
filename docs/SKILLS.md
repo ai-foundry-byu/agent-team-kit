@@ -1,6 +1,6 @@
 # Skills reference
 
-The kit bundles ten skills (under `skills/`) as worked examples. Most come from the real project they were built in, so their *specifics* are project-bound (table names, file paths, the deploy host) while the *patterns* generalize; `merge-worktree` is kit-native (worktree-mode integration), and `spec`, `build-spec`, `mockup` and `share-memory` have been generalized to drop in as-is, taking project commands from your CLAUDE.md. They are here to show the kinds of skill an AI-native team should write for itself. Treat the project-specific paths inside them as placeholders to adapt.
+The kit bundles thirteen skills (under `skills/`) as worked examples: `build-spec`, `fix-bug`, `merge-worktree`, `mockup`, `promote`, `push`, `regression-check`, `remove-flag`, `share-memory`, `spec`, `stage`, `userflow-map` and `ux-critique`. Most come from the real project they were built in, so their *specifics* are project-bound (table names, file paths, the deploy host) while the *patterns* generalize; `merge-worktree` is kit-native (worktree-mode integration), and `spec`, `build-spec`, `mockup` and `share-memory` have been generalized to drop in as-is, taking project commands from your CLAUDE.md. They are here to show the kinds of skill an AI-native team should write for itself. Treat the project-specific paths inside them as placeholders to adapt.
 
 ## What a skill is, and why it matters for a team
 
@@ -53,6 +53,16 @@ Below, each example, what it does, why the pattern is valuable, and what is proj
 **Why the pattern matters.** A two-person team needs a *shared mental model* of the product, and mental models drift when they live only in two separate heads. This skill keeps that model in a version-controlled, regenerable artifact both people's agents read and update. The general lesson: **skills can curate the shared knowledge artifacts a team relies on** (an architecture map, a glossary, a flow doc), keeping them current as a byproduct of work instead of a doc that rots.
 
 **Project-specific to swap.** Essentially all of it (the `docs/userflow/` layout and schema); keep the *idea* of a tracked, generated, single-source-of-truth artifact with a feedback loop.
+
+---
+
+## `ux-critique`, judge whether a flow makes sense, not only whether it works
+
+**What it does.** Drives the app in a real browser through one key flow, against the [disposable environment](./DISPOSABLE-ENVIRONMENT.md) and never prod. At each step it reads the code behind the route, writes down what should happen, takes one action, observes the result, and records a finding only where reality differs from the prediction. Each finding is filed on the screen where it was found, through the same [feedback pipeline](./FEEDBACK-LOOP-SPEC.md) as real user reports (tagged `source: ux-critic`), so it lands in the same inbox and hands off to `fix-bug`. A run ends with one self-contained annotated HTML report of its findings.
+
+**Why the pattern matters.** Crawlers and tests answer "did it break". They cannot answer "is the next step obvious" or "is this what a user expected". A written prediction next to an observation turns that judgment into a concrete, triageable report instead of an opinion. The skill also keeps a `taste.md` file of the owner's verdicts on past findings (real or intended), which is what stops later runs from repeating known noise. The output is a list to triage, never a pass/fail gate, because model judgment varies run to run.
+
+**Project-specific to swap.** The disposable-environment launch and sign-in, the dev-only feedback-submit hook (`window.__uxCritic.submit`), the report script and its path, and `taste.md`.
 
 ---
 
