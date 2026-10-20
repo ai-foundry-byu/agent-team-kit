@@ -150,7 +150,7 @@ rm -rf /tmp/agent-team-kit
 
 Idempotent and brownfield-safe: it copies the hooks, skills, and launchers in; appends the `.gitignore` + `CLAUDE.md` sections (guarded); sets `core.hooksPath`; and never touches your source. Then:
 
-- **Customize for your stack** if you're not on Supabase + pnpm: `SCHEMA_RE`/`PSQL_DDL_RE` in `bash-guard.mjs`, the pool/`RESERVED_PORT`/`START_HINT` in `dev-port.mjs`, the migrations path in `post-merge`.
+- **Customize for your stack** if you're not on Supabase + pnpm: `SCHEMA_RE`/`PSQL_DDL_RE` in `bash-guard.mjs`, the pool/`RESERVED_PORT`/`START_HINT` in `dev-port.mjs`, the migrations path in `post-merge`, and `CHECK_CMD`/`TEST_CMD` in `.githooks/pre-push` (they default to `pnpm -s check` and `pnpm -s test`, so on an npm or yarn project every push is blocked until you change them). The file-size guard's `isGoverned` in `file-size-budget.mjs` only covers files under `src/`, and `arch-check.mjs` scans `src/` when given no files; in a layout without `src/` (a default Next.js app-router project keeps code in `app/`) the guard checks nothing until you change the root.
 - **Load the launchers** once: `echo 'source /path/to/agent-team-kit/worktree-commands.sh' >> ~/.zshrc`.
 - Install *mechanics* differ slightly by situation (solo brownfield / new pair / adding a second person), see [`docs/ADOPT.md`](./docs/ADOPT.md). Tending agents while away (verbose, remote control, keep-awake) is the same in both modes, [`docs/TENDING-AGENTS.md`](./docs/TENDING-AGENTS.md).
 

@@ -42,6 +42,9 @@ The defaults assume Supabase + pnpm. Edit:
 - `scripts/hooks/bash-guard.mjs`, `SCHEMA_RE` (the commands that serialize behind the schema lock) and `PSQL_DDL_RE` (the ad-hoc-DDL block; remove it if you don't use psql).
 - `scripts/hooks/dev-port.mjs`, the config block: `POOL_LOW`/`POOL_HIGH` (the agent port pool), `RESERVED_PORT` (your dev server's default port, kept for the human), and `START_HINT` (your stack's dev-server command). Give each app its own non-overlapping pool if you run several at once.
 - `.githooks/post-merge`, the migrations directory it watches.
+- `.githooks/pre-push`, `CHECK_CMD` and `TEST_CMD`. They default to `pnpm -s check` and `pnpm -s test`; on an npm or yarn project (or one with no `check` script) every push is blocked until you change them.
+- `scripts/hooks/file-size-budget.mjs`, `isGoverned`: the extensions and the root it covers. The root defaults to `src/`, and `arch-check.mjs` scans `src/` when run with no files. In a layout without `src/` (a default Next.js app-router project keeps code in `app/`), the file-size guard checks nothing until you change it. `BUDGET`, `FROZEN` and `EXEMPT` are in the same file.
+- `scripts/hooks/import-boundaries.mjs`, `RESTRICTED_RE`, `RESTRICTED_MODULE` and `ALLOWLIST`, if you use the import-boundary guard.
 
 ## What gets committed vs stays local
 
