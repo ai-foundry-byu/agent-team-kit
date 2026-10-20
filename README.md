@@ -37,7 +37,7 @@ The single behavioral difference is the shared-tree git guard (blocking blanket-
 - **Reach for worktree mode** when you want agents running **unattended on potentially-overlapping work**, fire several, walk away, tend them from your phone, integrate when they're done. The merge tax buys guaranteed isolation.
 - **You don't have to choose once.** Because the modes share a setup, you can stay on `main` by default and spin up a worktree for the occasional risky fan-out. The launchers make it a per-terminal call: `cs <name>` starts a stay-on-main session, `wt <name>` starts a worktree one.
 
-Agents are separate processes that cannot talk to each other, so in **both** modes coordination routes through the **filesystem** (lock files under `.git/.wg-agent/`) and **git** (tracked migrations and shared settings). The hooks are the teeth; the working agreements below are the discipline. You need both.
+Agents are separate processes. Current Claude Code lets one session send another a message, but a message is plain text that arrives between steps and carries no authority: it cannot hold a lock, block a command, or enforce anything. The kit does not depend on agents messaging each other, so in **both** modes coordination routes through the **filesystem** (lock files under `.git/.wg-agent/`) and **git** (tracked migrations and shared settings). The hooks are the teeth; the working agreements below are the discipline. You need both.
 
 ---
 

@@ -23,7 +23,7 @@ The integration model that pairs with this: keep one Claude session as a **cockp
 
 ## The coordination substrate: the filesystem
 
-Claude Code agents are independent processes with separate context. They cannot message each other. There is an experimental "agent teams" feature with a shared task list and mailbox, but it defaults to one working directory (so agents still collide on files), keeps its file-locking internal (no API you can borrow), and is not stable. So this kit assumes no inter-agent channel and routes all coordination through **lock files on disk** plus **git**.
+Claude Code agents are independent processes with separate context. Current Claude Code can pass a plain-text message from one session to another, but it arrives only between steps and carries no authority: a message cannot hold a lock or refuse a command, so it cannot enforce anything. There is also an experimental "agent teams" feature with a shared task list and mailbox, but it defaults to one working directory (so agents still collide on files), keeps its file-locking internal (no API you can borrow), and is not stable. So this kit does not depend on any inter-agent channel and routes all coordination through **lock files on disk** plus **git**.
 
 Lock state lives under `.git/.wg-agent/`, resolved via `git rev-parse --git-common-dir`. That matters: a per-worktree `.git` would give each agent its *own* lock (no mutual exclusion). The common dir is the same absolute path for the main checkout and every worktree, so the lock is genuinely shared.
 
